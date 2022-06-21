@@ -3,7 +3,6 @@ import 'package:flutter_native_splash/flutter_native_splash.dart';
 import 'package:hive/hive.dart';
 import 'package:todoist/screens/screens.dart';
 
-import '../models/tasks.dart';
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);

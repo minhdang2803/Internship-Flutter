@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:todoist/database_helper.dart';
 import 'package:todoist/models/models.dart';
 import 'package:todoist/theme.dart';
 
@@ -51,10 +52,12 @@ class _AddingTasksState extends State<AddingTasks> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
           //TODO: Add to list here
-          addTaskTable(TasksTable(
-              color: _color.value.toString(),
-              name: _controller.text,
-              tasks: []));
+          DatabaseHelper.instance.insertTaskTable(TaskTables(
+            color: _color.value.toString(),
+            name: _controller.text,
+          ));
+          _controller.clear();
+          Navigator.pop(context, true);
         },
         label: const Text('Create Task'),
         icon: const Icon(Icons.add),
@@ -133,10 +136,6 @@ class _AddingTasksState extends State<AddingTasks> {
         ),
       );
   Widget buildColorPicker() => BlockPicker(
-      pickerColor: _color, onColorChanged: (color) => _color = color);
-
-  Future<void> addTaskTable(TasksTable task) async {
-    final box = Boxes.getTaskTables();
-    box.add(task);
-  }
+      pickerColor: _color,
+      onColorChanged: (color) => setState(() => _color = color));
 }

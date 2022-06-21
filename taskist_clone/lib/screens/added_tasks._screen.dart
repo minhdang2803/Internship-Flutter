@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:todoist/components/components.dart';
+import 'package:todoist/database_helper.dart';
 import 'package:todoist/models/models.dart';
 import 'screens.dart';
 import '../theme.dart';
@@ -13,7 +14,6 @@ class AddedTasks extends StatefulWidget {
 }
 
 class _AddedTasksState extends State<AddedTasks> {
-  final List<TasksTable> _listOfTaskTables = [];
   late DateTime time;
   @override
   void initState() {
@@ -148,16 +148,54 @@ class _AddedTasksState extends State<AddedTasks> {
   Widget buildTasksList(context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 35),
-      child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (context, index) => GestureDetector(
-          onTap: () => Navigator.push(context,
-              MaterialPageRoute(builder: (context) => const EdittingTasks())),
-          child: const TaskCard(),
-        ),
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
-        itemCount: 10,
+      child: FutureBuilder(
+        future: DatabaseHelper.instance.getTaskTables(),
+        builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
+          if (snapshot.hasError) {
+            return Center(
+              child: Text(
+                snapshot.error.toString(),
+                style: TaskistTheme.lightTextTheme.headline2,
+              ),
+            );
+          } else if (!snapshot.hasData) {
+            return Center(
+              child: Text(
+                'No tasks now',
+                style: TaskistTheme.lightTextTheme.headline2,
+              ),
+            );
+          } else if (snapshot.hasData) {
+            return ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) => GestureDetector(
+                onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => EdittingTasks(
+                              task: snapshot.data![index],
+                            ))).then(
+                  (value) => setState(() {}),
+                ),
+                onLongPress: () {
+                  DatabaseHelper.instance.deleteItem(snapshot.data![index]);
+                  setState(() {});
+                },
+                onDoubleTap: () {
+                  DatabaseHelper.instance.deleteAllTask();
+                  DatabaseHelper.instance.deleteAllTable();
+                  setState(() {});
+                },
+                child: TaskCard(taskTables: snapshot.data![index]),
+              ),
+              separatorBuilder: (context, index) => const SizedBox(width: 10),
+              itemCount: snapshot.data!.length,
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
       ),
     );
   }

@@ -1,18 +1,20 @@
+import 'dart:ffi';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:todoist/database_helper.dart';
 import '../models/models.dart';
 import '../theme.dart';
 
 class EdittingTasks extends StatefulWidget {
-  const EdittingTasks({Key? key, this.task}) : super(key: key);
-  final TasksTable? task;
+  const EdittingTasks({Key? key, required this.task}) : super(key: key);
+  final TaskTables? task;
   @override
   State<EdittingTasks> createState() => _EdittingTasksState();
 }
 
 class _EdittingTasksState extends State<EdittingTasks> {
   late Color _color;
-  late List<Task> _tasks;
   late String _name;
   final _controller = TextEditingController();
   @override
@@ -20,11 +22,11 @@ class _EdittingTasksState extends State<EdittingTasks> {
     super.initState();
     if (widget.task != null) {
       _color = Color(int.parse(widget.task!.color));
-      _tasks = widget.task!.tasks;
+      // _tasks = widget.task!.tasks;
       _name = widget.task!.name;
     } else {
       _color = Colors.blue;
-      _tasks = [];
+      // _tasks = [];
       _name = 'task';
     }
   }
@@ -81,7 +83,17 @@ class _EdittingTasksState extends State<EdittingTasks> {
                     style: TaskistTheme.lightTextTheme.headline3!.copyWith(
                       fontWeight: FontWeight.bold,
                     )),
-                onPressed: () => Navigator.of(context).pop(),
+                onPressed: () {
+                  DatabaseHelper.instance.insertTask(
+                      task: Task(
+                        check_val: '0',
+                        name: _controller.text,
+                        taskTables_name: widget.task!.name,
+                      ),
+                      taskTables: widget.task!);
+                  _controller.clear();
+                  Navigator.pop(context);
+                },
               ),
             ],
           ),
@@ -103,24 +115,93 @@ class _EdittingTasksState extends State<EdittingTasks> {
         padding: EdgeInsets.only(
             left: MediaQuery.of(context).size.width * 0.1,
             bottom: MediaQuery.of(context).size.width * 0.1),
-        child: ListView.separated(
-            itemBuilder: (item, index) => smallTasks(),
-            separatorBuilder: (item, index) =>
-                SizedBox(height: MediaQuery.of(context).size.height * 0.015),
-            itemCount: 50),
+        child: FutureBuilder(
+          future: DatabaseHelper.instance.getTasks(widget.task),
+          builder: (context, AsyncSnapshot<List<Task>> snapshot) {
+            if (!snapshot.hasData) {
+              return Center(
+                  child: Text('No tasks done',
+                      style: TaskistTheme.lightTextTheme.headline2));
+            } else if (snapshot.hasData) {
+              return ListView.separated(
+                  itemBuilder: (item, index) {
+                    Task task = snapshot.data![index];
+                    return Dismissible(
+                      direction: DismissDirection.endToStart,
+                      onDismissed: (direction) {
+                        DatabaseHelper.instance.deleteCurrentTask(
+                          task: task,
+                          tasktable: widget.task!,
+                        );
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              '${task.name} dismissed',
+                              style: TaskistTheme.lightTextTheme.headline3!
+                                  .copyWith(color: _color),
+                            ),
+                          ),
+                        );
+                        setState(() {});
+                      },
+                      background: Container(
+                        padding: const EdgeInsets.only(right: 10),
+                        color: Colors.red,
+                        alignment: Alignment.centerRight,
+                        child: const Icon(
+                          Icons.delete_forever,
+                          color: Colors.white,
+                          size: 30.0,
+                        ),
+                      ),
+                      key: UniqueKey(),
+                      child: GestureDetector(
+                        child: smallTasks(task, task.check_val),
+                        onTap: () {
+                          DatabaseHelper.instance.updateCurrentTask(
+                            tasktable: widget.task!,
+                            task: task,
+                            currentValue: task.check_val == '0' ? '1' : '0',
+                          );
+                          setState(() {});
+                        },
+                      ),
+                    );
+                  },
+                  separatorBuilder: (item, index) => SizedBox(
+                      height: MediaQuery.of(context).size.height * 0.015),
+                  itemCount: snapshot.data!.length);
+            } else if (snapshot.hasError) {
+              return Center(
+                  child: Text(snapshot.error.toString(),
+                      style: TaskistTheme.lightTextTheme.headline2));
+            } else {
+              return const Center(child: CircularProgressIndicator());
+            }
+          },
+        ),
       ),
     );
   }
 
-  Widget smallTasks() {
+  Widget smallTasks(Task task, String check) {
+    int isDone = int.parse(check);
     return Row(
       children: [
-        const Icon(Icons.check_box),
+        task.check_val == '0'
+            ? const Icon(Icons.check_box_outline_blank)
+            : const Icon(Icons.check_box),
         const SizedBox(width: 20),
-        Text(
-          'Hello world',
-          style: TaskistTheme.lightTextTheme.headline1!
-              .copyWith(fontWeight: FontWeight.normal),
+        RichText(
+          text: TextSpan(
+            text: task.name,
+            style: TaskistTheme.lightTextTheme.headline1!.copyWith(
+                fontWeight: FontWeight.normal,
+                decoration: isDone == 1
+                    ? TextDecoration.lineThrough
+                    : TextDecoration.none,
+                decorationThickness: 3),
+          ),
         )
       ],
     );
@@ -165,7 +246,8 @@ class _EdittingTasksState extends State<EdittingTasks> {
         padding: EdgeInsets.zero,
         icon: const Icon(Icons.delete, size: 40),
         onPressed: () {
-          //TODO: Delete task in database
+          //TODO: Delete TaskTable
+          DatabaseHelper.instance.deleteItem(widget.task!);
           Navigator.pop(context, true);
         },
       ),
@@ -220,8 +302,8 @@ class _EdittingTasksState extends State<EdittingTasks> {
         ),
       );
   Widget buildColorPicker() => BlockPicker(
-        pickerColor:
-            widget.task == null ? _color : Color(int.parse(widget.task!.color)),
+        pickerColor: Color(int.parse(widget.task!.color)),
         onColorChanged: (color) => setState(() => _color = color),
       );
 }
+//widget.task == null ? _color :

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:todoist/components/components.dart';
+import 'package:todoist/database_helper.dart';
+import '../models/tasks.dart';
 import 'screens.dart';
 import '../theme.dart';
 
@@ -98,18 +100,37 @@ class _DoneTasksState extends State<DoneTasks> {
   Widget buildTasksList(context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 35),
-      child: ListView.separated(
-        physics: const BouncingScrollPhysics(),
-        scrollDirection: Axis.horizontal,
-        itemBuilder: (context, index) => GestureDetector(
-          child: const TaskCard(),
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const EdittingTasks()),
-          ),
-        ),
-        separatorBuilder: (context, index) => const SizedBox(width: 10),
-        itemCount: 10,
+      child: FutureBuilder(
+        future: DatabaseHelper.instance.getTaskTables(),
+        builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
+          if (!snapshot.hasData) {
+            return Center(
+                child: Text('No tasks done',
+                    style: TaskistTheme.lightTextTheme.headline2));
+          } else if (snapshot.hasError) {
+            return Center(
+                child: Text(snapshot.error.toString(),
+                    style: TaskistTheme.lightTextTheme.headline2));
+          } else if (snapshot.hasData) {
+            return ListView.separated(
+              physics: const BouncingScrollPhysics(),
+              scrollDirection: Axis.horizontal,
+              itemBuilder: (context, index) => GestureDetector(
+                child: TaskCard(taskTables: snapshot.data![index]),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) =>
+                          EdittingTasks(task: snapshot.data![index])),
+                ),
+              ),
+              separatorBuilder: (context, index) => const SizedBox(width: 10),
+              itemCount: snapshot.data!.length,
+            );
+          } else {
+            return const Center(child: CircularProgressIndicator());
+          }
+        },
       ),
     );
   }
