@@ -14,6 +14,7 @@ class EdittingTasks extends StatefulWidget {
 class _EdittingTasksState extends State<EdittingTasks> {
   late Color _color;
   late String _name;
+  double _ratio = 0;
   final _controller = TextEditingController();
   @override
   void initState() {
@@ -84,7 +85,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
                     style: TaskistTheme.lightTextTheme.headline3!.copyWith(
                       fontWeight: FontWeight.bold,
                     )),
-                onPressed: () {
+                onPressed: () async {
                   DatabaseHelper.instance.insertTask(
                       task: Task(
                         check_val: '0',
@@ -94,6 +95,8 @@ class _EdittingTasksState extends State<EdittingTasks> {
                       taskTables: widget.task!);
                   _controller.clear();
                   DatabaseHelper.instance.setDone(tasktable: widget.task!);
+                  _ratio =
+                      await DatabaseHelper.instance.countDone(widget.task!);
                   Navigator.pop(context, true);
                 },
               ),
@@ -159,7 +162,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
                       key: UniqueKey(),
                       child: GestureDetector(
                         child: smallTasks(task, task.check_val),
-                        onTap: () {
+                        onTap: () async {
                           DatabaseHelper.instance.updateCurrentTask(
                             tasktable: widget.task!,
                             task: task,
@@ -167,6 +170,8 @@ class _EdittingTasksState extends State<EdittingTasks> {
                           );
                           DatabaseHelper.instance
                               .setDone(tasktable: widget.task!);
+                          _ratio = await DatabaseHelper.instance
+                              .countDone(widget.task!);
                           setState(() {});
                         },
                       ),
@@ -220,18 +225,19 @@ class _EdittingTasksState extends State<EdittingTasks> {
         children: [
           buildTitleOfTask(context),
           SizedBox(height: MediaQuery.of(context).size.height * 0.010),
-          const Text("1 of 2 tasks"),
+          Text("${(_ratio * 100).toInt()}% of tasks"),
           SizedBox(height: MediaQuery.of(context).size.height * 0.010),
           Row(
             children: [
               Expanded(
-                child: Container(
+                child: LinearProgressIndicator(
                   color: _color,
-                  height: 8,
+                  value: _ratio,
+                  backgroundColor: _color.withOpacity(0.2),
                 ),
               ),
               const SizedBox(width: 5),
-              const Text('50%'),
+              Text('${(_ratio * 100).toInt()}%'),
             ],
           ),
         ],
@@ -298,7 +304,11 @@ class _EdittingTasksState extends State<EdittingTasks> {
                       style: TaskistTheme.lightTextTheme.headline3!.copyWith(
                         fontWeight: FontWeight.bold,
                       )),
-                  onPressed: () => Navigator.of(context).pop(),
+                  onPressed: () {
+                    DatabaseHelper.instance
+                        .setColor(taskTables: widget.task!, color: _color);
+                    Navigator.pop(context, true);
+                  },
                 ),
               ],
             ),

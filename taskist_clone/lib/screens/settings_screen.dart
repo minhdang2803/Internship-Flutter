@@ -79,7 +79,7 @@ class SettingsScreen extends StatelessWidget {
         child: Column(
           children: [
             buildEachOption(
-                const Icon(Icons.settings), 'Hello World', const Text('1.1.0')),
+                const Icon(Icons.settings), 'Settings', const Text('1.1.0')),
             buildEachOption(
               Image(
                   image: const AssetImage(

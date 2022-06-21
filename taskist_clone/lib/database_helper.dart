@@ -1,6 +1,8 @@
 import 'package:sqflite/sqflite.dart';
+// ignore: depend_on_referenced_packages
 import 'package:path/path.dart';
 import 'package:todoist/models/models.dart';
+import 'package:flutter/material.dart';
 
 class DatabaseHelper {
   static const _databaseName = 'taskist.db';
@@ -174,5 +176,26 @@ class DatabaseHelper {
         ? taskTable.map((e) => TaskTables.fromJson(e)).toList()
         : [];
     return ret;
+  }
+
+  Future<int> setColor(
+      {required TaskTables taskTables, required Color color}) async {
+    final db = await instance.database;
+    return db.rawUpdate('''
+    UPDATE $_taskTable
+    SET color = ${color.value}
+    WHERE $_taskTable.name = '${taskTables.name}';
+''');
+  }
+
+  Future<double> countDone(TaskTables taskTables) async {
+    int count = 0;
+    List<Task> listTasks = await getTasks(taskTables);
+    listTasks.forEach((element) {
+      if (element.check_val == '1') {
+        count++;
+      }
+    });
+    return (count / listTasks.length).toDouble();
   }
 }
