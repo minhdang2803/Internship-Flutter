@@ -101,7 +101,7 @@ class _DoneTasksState extends State<DoneTasks> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 35),
       child: FutureBuilder(
-        future: DatabaseHelper.instance.getTaskTables(),
+        future: DatabaseHelper.instance.getAllDone(),
         builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
           if (!snapshot.hasData) {
             return Center(
@@ -122,7 +122,7 @@ class _DoneTasksState extends State<DoneTasks> {
                   MaterialPageRoute(
                       builder: (context) =>
                           EdittingTasks(task: snapshot.data![index])),
-                ),
+                ).then((value) => setState(() {})),
               ),
               separatorBuilder: (context, index) => const SizedBox(width: 10),
               itemCount: snapshot.data!.length,

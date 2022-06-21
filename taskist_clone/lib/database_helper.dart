@@ -31,17 +31,18 @@ class DatabaseHelper {
   Future _onCreate(Database db, int version) async {
     await db.execute('''
         CREATE TABLE $_taskTable(
-          id INTEGER PRIMARY KEY UNIQUE AUTOINCREMENT,
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT,
-          color TEXT
+          color TEXT,
+          all_done TEXT
         );
 ''');
     await db.execute("""
         CREATE TABLE $_task(
-          id INTEGER PRIMARY KEY UNIQUE AUTOINCREMENT,
+          id INTEGER PRIMARY KEY AUTOINCREMENT,
           name TEXT,
           check_val INTEGER NOT NULL CHECK(check_val >=0 AND check_val <=1),
-          taskTables_name TEXT UNIQUE,
+          taskTables_name TEXT, 
           FOREIGN KEY(TaskTables_name) REFERENCES $_taskTable(name)
         );
 """);
@@ -49,11 +50,10 @@ class DatabaseHelper {
 
   Future<List<TaskTables>> getTaskTables() async {
     final db = await instance.database;
-    final tasktables = await db.query(_taskTable, columns: [
-      'id',
-      'name',
-      'color',
-    ]);
+    final tasktables = await db.query(_taskTable,
+        columns: ['id', 'name', 'color', 'all_done'],
+        where: 'all_done = ?',
+        whereArgs: [0]);
     List<TaskTables> ret = tasktables.isNotEmpty
         ? tasktables.map((task) => TaskTables.fromJson(task)).toList()
         : [];
@@ -92,6 +92,25 @@ class DatabaseHelper {
         ? taskTable.map((element) => Task.fromJson(element)).toList()
         : [];
     return ret;
+  }
+
+  Future<int> setDone({required TaskTables tasktable}) async {
+    final db = await instance.database;
+    List<Task> listTasks = await getTasks(tasktable);
+    bool isDone = listTasks.every((element) => element.check_val == '1');
+    if (isDone) {
+      return db.rawUpdate('''
+      UPDATE $_taskTable
+      SET all_done = '1'
+      WHERE $_taskTable.name = '${tasktable.name}'
+''');
+    } else {
+      return db.rawUpdate('''
+      UPDATE $_taskTable
+      SET all_done = '0'
+      WHERE $_taskTable.name = '${tasktable.name}'
+''');
+    }
   }
 
   Future<int> insertTask(
@@ -144,5 +163,16 @@ class DatabaseHelper {
     await db.rawDelete('''
     DELETE FROM $_task;
 ''');
+  }
+
+  Future<List<TaskTables>> getAllDone() async {
+    final db = await instance.database;
+    final taskTable = await db.rawQuery('''
+    SELECT * FROM $_taskTable WHERE all_done = 1;
+''');
+    List<TaskTables> ret = taskTable.isNotEmpty
+        ? taskTable.map((e) => TaskTables.fromJson(e)).toList()
+        : [];
+    return ret;
   }
 }

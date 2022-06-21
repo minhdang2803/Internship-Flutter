@@ -1,5 +1,3 @@
-import 'dart:ffi';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:todoist/database_helper.dart';
@@ -57,7 +55,10 @@ class _EdittingTasksState extends State<EdittingTasks> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: _color,
-        onPressed: () => buildAddTasks(context),
+        onPressed: () {
+          buildAddTasks(context);
+          setState(() {});
+        },
         child: const Icon(Icons.add),
       ),
     );
@@ -92,7 +93,8 @@ class _EdittingTasksState extends State<EdittingTasks> {
                       ),
                       taskTables: widget.task!);
                   _controller.clear();
-                  Navigator.pop(context);
+                  DatabaseHelper.instance.setDone(tasktable: widget.task!);
+                  Navigator.pop(context, true);
                 },
               ),
             ],
@@ -163,6 +165,8 @@ class _EdittingTasksState extends State<EdittingTasks> {
                             task: task,
                             currentValue: task.check_val == '0' ? '1' : '0',
                           );
+                          DatabaseHelper.instance
+                              .setDone(tasktable: widget.task!);
                           setState(() {});
                         },
                       ),
