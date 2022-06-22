@@ -76,7 +76,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
           ),
         ),
         content: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.11,
+          height: MediaQuery.of(context).size.height * 0.12,
           child: Column(
             children: [
               buildTextField(),
@@ -87,12 +87,13 @@ class _EdittingTasksState extends State<EdittingTasks> {
                     )),
                 onPressed: () async {
                   DatabaseHelper.instance.insertTask(
-                      task: Task(
-                        check_val: '0',
-                        name: _controller.text,
-                        taskTables_name: widget.task!.name,
-                      ),
-                      taskTables: widget.task!);
+                    task: Task(
+                      check_val: '0',
+                      name: _controller.text,
+                      taskTables_name: widget.task!.name,
+                    ),
+                    taskTables: widget.task!,
+                  );
                   _controller.clear();
                   DatabaseHelper.instance.setDone(tasktable: widget.task!);
                   _ratio =
@@ -118,15 +119,17 @@ class _EdittingTasksState extends State<EdittingTasks> {
     return Expanded(
       child: Padding(
         padding: EdgeInsets.only(
-            left: MediaQuery.of(context).size.width * 0.1,
-            bottom: MediaQuery.of(context).size.width * 0.1),
+          left: MediaQuery.of(context).size.width * 0.1,
+          bottom: MediaQuery.of(context).size.width * 0.1,
+        ),
         child: FutureBuilder(
           future: DatabaseHelper.instance.getTasks(widget.task),
           builder: (context, AsyncSnapshot<List<Task>> snapshot) {
             if (!snapshot.hasData) {
               return Center(
-                  child: Text('No tasks done',
-                      style: TaskistTheme.lightTextTheme.headline2));
+                child: Text('No tasks done',
+                    style: TaskistTheme.lightTextTheme.headline2),
+              );
             } else if (snapshot.hasData) {
               return ListView.separated(
                   itemBuilder: (item, index) {
@@ -147,7 +150,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
                             ),
                           ),
                         );
-                        setState(() {});
+                        // setState(() {});
                       },
                       background: Container(
                         padding: const EdgeInsets.only(right: 10),
@@ -172,7 +175,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
                               .setDone(tasktable: widget.task!);
                           _ratio = await DatabaseHelper.instance
                               .countDone(widget.task!);
-                          setState(() {});
+                          // setState(() {});
                         },
                       ),
                     );
@@ -249,9 +252,11 @@ class _EdittingTasksState extends State<EdittingTasks> {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       dense: true,
-      leading: Text(_name,
-          style: TaskistTheme.lightTextTheme.headline3!
-              .copyWith(fontSize: 40, fontWeight: FontWeight.bold)),
+      leading: Text(
+        _name,
+        style: TaskistTheme.lightTextTheme.headline3!
+            .copyWith(fontSize: 40, fontWeight: FontWeight.bold),
+      ),
       trailing: IconButton(
         padding: EdgeInsets.zero,
         icon: const Icon(Icons.delete, size: 40),
@@ -265,22 +270,18 @@ class _EdittingTasksState extends State<EdittingTasks> {
   }
 
   Widget buildTopBar(context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: MediaQuery.of(context).size.width * 0.0),
-      child: ListTile(
-        leading: IconButton(
-          icon: Icon(
-            Icons.circle,
-            size: 40,
-            color: _color,
-          ),
-          onPressed: () => pickColor(context),
+    return ListTile(
+      leading: IconButton(
+        icon: Icon(
+          Icons.circle,
+          size: 40,
+          color: _color,
         ),
-        trailing: IconButton(
-          onPressed: () => Navigator.pop(context, true),
-          icon: const Icon(Icons.clear, size: 30),
-        ),
+        onPressed: () => pickColor(context),
+      ),
+      trailing: IconButton(
+        onPressed: () => Navigator.pop(context, true),
+        icon: const Icon(Icons.clear, size: 30),
       ),
     );
   }
@@ -290,9 +291,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
         builder: (context) => AlertDialog(
           title: Text(
             'Pick Your Color',
-            style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: TaskistTheme.lightTextTheme.headline3,
           ),
           content: SizedBox(
             height: MediaQuery.of(context).size.height * 0.46,
@@ -300,10 +299,10 @@ class _EdittingTasksState extends State<EdittingTasks> {
               children: [
                 buildColorPicker(),
                 TextButton(
-                  child: Text('Select this',
-                      style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      )),
+                  child: Text(
+                    'Select this',
+                    style: TaskistTheme.lightTextTheme.headline3,
+                  ),
                   onPressed: () {
                     DatabaseHelper.instance
                         .setColor(taskTables: widget.task!, color: _color);
