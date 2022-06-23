@@ -128,23 +128,6 @@ class _AddedTasksState extends State<AddedTasks> {
     );
   }
 
-  // Widget buildTasksList(context) {
-  //   return Padding(
-  //     padding: const EdgeInsets.symmetric(horizontal: 35),
-  //     child: ListView.separated(
-  //       physics: const BouncingScrollPhysics(),
-  //       scrollDirection: Axis.horizontal,
-  //       itemBuilder: (context, index) => GestureDetector(
-  //         onTap: () => Navigator.push(context,
-  //             MaterialPageRoute(builder: (context) => const EdittingTasks())),
-  //         child: const TaskCard(),
-  //       ),
-  //       separatorBuilder: (context, index) => const SizedBox(width: 10),
-  //       itemCount: 10,
-  //     ),
-  //   );
-  // }
-
   Widget buildTasksList(context) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 35),
@@ -158,37 +141,33 @@ class _AddedTasksState extends State<AddedTasks> {
                 style: TaskistTheme.lightTextTheme.headline2,
               ),
             );
-          } else if (!snapshot.hasData) {
-            return Center(
-              child: Text(
-                'No tasks now',
-                style: TaskistTheme.lightTextTheme.headline2,
-              ),
-            );
           } else if (snapshot.hasData) {
             return ListView.separated(
               physics: const BouncingScrollPhysics(),
               scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) => GestureDetector(
-                onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => EdittingTasks(
-                              task: snapshot.data![index],
-                            ))).then(
-                  (value) => setState(() {}),
-                ),
-                onLongPress: () {
-                  DatabaseHelper.instance.deleteItem(snapshot.data![index]);
-                  setState(() {});
-                },
-                onDoubleTap: () {
-                  DatabaseHelper.instance.deleteAllTask();
-                  DatabaseHelper.instance.deleteAllTable();
-                  setState(() {});
-                },
-                child: TaskCard(taskTables: snapshot.data![index]),
-              ),
+              itemBuilder: (context, index) {
+                TaskTables tasktable = snapshot.data![index];
+                return GestureDetector(
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => EdittingTasks(
+                                task: tasktable,
+                              ))).then(
+                    (value) => setState(() {}),
+                  ),
+                  onLongPress: () {
+                    DatabaseHelper.instance.deleteItem(tasktable);
+                    setState(() {});
+                  },
+                  onDoubleTap: () {
+                    DatabaseHelper.instance.deleteAllTask();
+                    DatabaseHelper.instance.deleteAllTable();
+                    setState(() {});
+                  },
+                  child: TaskCard(taskTables: tasktable),
+                );
+              },
               separatorBuilder: (context, index) => const SizedBox(width: 10),
               itemCount: snapshot.data!.length,
             );

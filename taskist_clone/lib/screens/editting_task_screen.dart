@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:todoist/database_helper.dart';
+import 'package:todoist/error_handler.dart';
 import '../models/models.dart';
 import '../theme.dart';
 
@@ -12,6 +13,7 @@ class EdittingTasks extends StatefulWidget {
 }
 
 class _EdittingTasksState extends State<EdittingTasks> {
+  late String? _error;
   late Color _color;
   late String _name;
   double _ratio = 0;
@@ -28,6 +30,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
       // _tasks = [];
       _name = 'task';
     }
+    _error = null;
   }
 
   @override
@@ -76,31 +79,46 @@ class _EdittingTasksState extends State<EdittingTasks> {
           ),
         ),
         content: SizedBox(
-          height: MediaQuery.of(context).size.height * 0.11,
-          child: Column(
-            children: [
-              buildTextField(),
-              TextButton(
-                child: Text('Add',
-                    style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-                      fontWeight: FontWeight.bold,
-                    )),
-                onPressed: () async {
-                  DatabaseHelper.instance.insertTask(
-                      task: Task(
-                        check_val: '0',
-                        name: _controller.text,
-                        taskTables_name: widget.task!.name,
-                      ),
-                      taskTables: widget.task!);
-                  _controller.clear();
-                  DatabaseHelper.instance.setDone(tasktable: widget.task!);
-                  _ratio =
-                      await DatabaseHelper.instance.countDone(widget.task!);
-                  Navigator.pop(context, true);
-                },
-              ),
-            ],
+          // height: MediaQuery.of(context).size.height * 0.11,
+          child: SingleChildScrollView(
+            child: Column(
+              children: [
+                buildTextField(),
+                TextButton(
+                  child: Text('Add',
+                      style: TaskistTheme.lightTextTheme.headline3!.copyWith(
+                        fontWeight: FontWeight.bold,
+                      )),
+                  onPressed: () async {
+                    try {
+                      DatabaseHelper.instance.insertTask(
+                          task: Task(
+                            check_val: '0',
+                            name: _controller.text,
+                            taskTables_name: widget.task!.name,
+                          ),
+                          taskTables: widget.task!);
+                      _controller.clear();
+                      DatabaseHelper.instance.setDone(tasktable: widget.task!);
+                      _ratio =
+                          await DatabaseHelper.instance.countDone(widget.task!);
+                    } catch (error) {
+                      _error = error.toString();
+                      String getError = ErrorHandler.getError(_error!);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Task$getError',
+                              style: TaskistTheme.lightTextTheme.headline3!
+                                  .copyWith(color: _color)),
+                        ),
+                      );
+                    }
+                    setState(() {});
+                    Navigator.pop(context, true);
+                  },
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -123,11 +141,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
         child: FutureBuilder(
           future: DatabaseHelper.instance.getTasks(widget.task),
           builder: (context, AsyncSnapshot<List<Task>> snapshot) {
-            if (!snapshot.hasData) {
-              return Center(
-                  child: Text('No tasks done',
-                      style: TaskistTheme.lightTextTheme.headline2));
-            } else if (snapshot.hasData) {
+            if (snapshot.hasData) {
               return ListView.separated(
                   itemBuilder: (item, index) {
                     Task task = snapshot.data![index];
@@ -270,6 +284,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
           horizontal: MediaQuery.of(context).size.width * 0.0),
       child: ListTile(
         leading: IconButton(
+          padding: EdgeInsets.zero,
           icon: Icon(
             Icons.circle,
             size: 40,
@@ -294,8 +309,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          content: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.46,
+          content: SingleChildScrollView(
             child: Column(
               children: [
                 buildColorPicker(),

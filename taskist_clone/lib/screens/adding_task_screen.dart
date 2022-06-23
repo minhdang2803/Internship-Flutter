@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:todoist/database_helper.dart';
+import 'package:todoist/error_handler.dart';
 import 'package:todoist/models/models.dart';
 import 'package:todoist/theme.dart';
 
@@ -50,13 +51,26 @@ class _AddingTasksState extends State<AddingTasks> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () {
+        onPressed: () async {
           //TODO: Add to list here
-          DatabaseHelper.instance.insertTaskTable(TaskTables(
-            all_done: 0,
-            color: _color.value.toString(),
-            name: _controller.text,
-          ));
+          try {
+            await DatabaseHelper.instance.insertTaskTable(TaskTables(
+              all_done: 0,
+              color: _color.value.toString(),
+              name: _controller.text,
+            ));
+          } catch (error) {
+            String getError = ErrorHandler.getError(error.toString());
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  'Table of tasks$getError',
+                  style: TaskistTheme.lightTextTheme.headline3!
+                      .copyWith(color: _color),
+                ),
+              ),
+            );
+          }
           _controller.clear();
           Navigator.pop(context, true);
         },
@@ -115,8 +129,7 @@ class _AddingTasksState extends State<AddingTasks> {
               fontWeight: FontWeight.bold,
             ),
           ),
-          content: SizedBox(
-            height: MediaQuery.of(context).size.height * 0.46,
+          content: SingleChildScrollView(
             child: Column(
               children: [
                 buildColorPicker(),

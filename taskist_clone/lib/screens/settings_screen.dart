@@ -1,8 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:todoist/screens/webview_screen.dart';
+import '../controller/controllers.dart';
+import 'dart:async';
 
-class SettingsScreen extends StatelessWidget {
+class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
 
+  @override
+  State<SettingsScreen> createState() => _SettingsScreenState();
+}
+
+class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -80,14 +88,20 @@ class SettingsScreen extends StatelessWidget {
           children: [
             buildEachOption(
                 const Icon(Icons.settings), 'Settings', const Text('1.1.0')),
-            buildEachOption(
-              Image(
-                  image: const AssetImage(
-                    'assets/twitter.png',
-                  ),
-                  height: MediaQuery.of(context).size.height * 0.025),
-              'Twitter',
-              const Icon(Icons.arrow_right),
+            GestureDetector(
+              child: buildEachOption(
+                Image(
+                    image: const AssetImage(
+                      'assets/twitter.png',
+                    ),
+                    height: MediaQuery.of(context).size.height * 0.025),
+                'Twitter',
+                const Icon(Icons.arrow_right),
+              ),
+              onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const WebviewScreen())),
             ),
             buildEachOption(
               const Icon(Icons.star_border_outlined, color: Colors.blue),

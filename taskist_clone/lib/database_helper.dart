@@ -34,7 +34,7 @@ class DatabaseHelper {
     await db.execute('''
         CREATE TABLE $_taskTable(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT,
+          name TEXT UNIQUE,
           color TEXT,
           all_done TEXT
         );
@@ -42,7 +42,7 @@ class DatabaseHelper {
     await db.execute("""
         CREATE TABLE $_task(
           id INTEGER PRIMARY KEY AUTOINCREMENT,
-          name TEXT,
+          name TEXT UNIQUE,
           check_val INTEGER NOT NULL CHECK(check_val >=0 AND check_val <=1),
           taskTables_name TEXT, 
           FOREIGN KEY(TaskTables_name) REFERENCES $_taskTable(name)
