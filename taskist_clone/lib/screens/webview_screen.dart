@@ -1,9 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:todoist/components/components.dart';
-import 'package:todoist/theme.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 import '../controller/controllers.dart';
 

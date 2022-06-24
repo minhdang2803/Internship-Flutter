@@ -106,6 +106,8 @@ class _EdittingTasksState extends State<EdittingTasks> {
                       String getError = ErrorHandler.getError(_error!);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
+                          backgroundColor:
+                              Theme.of(context).colorScheme.primary,
                           content: Text('Task$getError',
                               style: Theme.of(context)
                                   .textTheme
@@ -155,6 +157,8 @@ class _EdittingTasksState extends State<EdittingTasks> {
                         );
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
+                            backgroundColor:
+                                Theme.of(context).colorScheme.primary,
                             content: Text(
                               '${task.name} dismissed',
                               style: Theme.of(context)
@@ -277,6 +281,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
         padding: EdgeInsets.zero,
         icon: const Icon(Icons.delete, size: 40),
         onPressed: () {
+          // ignore: todo
           //TODO: Delete TaskTable
           DatabaseHelper.instance.deleteItem(widget.task!);
           Navigator.pop(context, true);

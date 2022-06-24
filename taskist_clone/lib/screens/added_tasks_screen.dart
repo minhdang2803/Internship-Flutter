@@ -4,7 +4,6 @@ import 'package:todoist/components/components.dart';
 import 'package:todoist/database_helper.dart';
 import 'package:todoist/models/models.dart';
 import 'screens.dart';
-import '../theme.dart';
 
 class AddedTasks extends StatefulWidget {
   const AddedTasks({Key? key}) : super(key: key);
@@ -134,48 +133,64 @@ class _AddedTasksState extends State<AddedTasks> {
       child: FutureBuilder(
         future: DatabaseHelper.instance.getTaskTables(),
         builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                snapshot.error.toString(),
-                style: Theme.of(context).textTheme.headline3,
-              ),
-            );
-          } else if (snapshot.hasData) {
-            return ListView.separated(
-              physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) {
-                TaskTables tasktable = snapshot.data![index];
-                return GestureDetector(
-                  onTap: () => Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                          builder: (context) => EdittingTasks(
-                                task: tasktable,
-                              ))).then(
-                    (value) => setState(() {}),
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasData) {
+              if (snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text(
+                    'No tasks remain!',
+                    style: Theme.of(context).textTheme.headline3,
                   ),
-                  onLongPress: () {
-                    DatabaseHelper.instance.deleteItem(tasktable);
-                    setState(() {});
-                  },
-                  onDoubleTap: () {
-                    DatabaseHelper.instance.deleteAllTask();
-                    DatabaseHelper.instance.deleteAllTable();
-                    setState(() {});
-                  },
-                  child: TaskCard(taskTables: tasktable),
                 );
-              },
-              separatorBuilder: (context, index) => const SizedBox(width: 10),
-              itemCount: snapshot.data!.length,
-            );
+              } else {
+                return buildListOfTasksTable(context, snapshot);
+              }
+            } else {
+              return Center(
+                child: Text(
+                  snapshot.error.toString(),
+                  style: Theme.of(context).textTheme.headline3,
+                ),
+              );
+            }
           } else {
             return const Center(child: CircularProgressIndicator());
           }
         },
       ),
+    );
+  }
+
+  Widget buildListOfTasksTable(
+      context, AsyncSnapshot<List<TaskTables>> snapshot) {
+    return ListView.separated(
+      physics: const BouncingScrollPhysics(),
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) {
+        TaskTables tasktable = snapshot.data![index];
+        return GestureDetector(
+          onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => EdittingTasks(
+                        task: tasktable,
+                      ))).then(
+            (value) => setState(() {}),
+          ),
+          onLongPress: () {
+            DatabaseHelper.instance.deleteItem(tasktable);
+            setState(() {});
+          },
+          onDoubleTap: () {
+            DatabaseHelper.instance.deleteAllTask();
+            DatabaseHelper.instance.deleteAllTable();
+            setState(() {});
+          },
+          child: TaskCard(taskTables: tasktable),
+        );
+      },
+      separatorBuilder: (context, index) => const SizedBox(width: 10),
+      itemCount: snapshot.data!.length,
     );
   }
 }

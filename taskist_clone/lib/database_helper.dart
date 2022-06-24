@@ -100,7 +100,7 @@ class DatabaseHelper {
     final db = await instance.database;
     List<Task> listTasks = await getTasks(tasktable);
     bool isDone = listTasks.every((element) => element.check_val == '1');
-    if (isDone) {
+    if (isDone && listTasks.isNotEmpty) {
       return db.rawUpdate('''
       UPDATE $_taskTable
       SET all_done = '1'
@@ -197,5 +197,10 @@ class DatabaseHelper {
       }
     });
     return (count / listTasks.length).toDouble();
+  }
+
+  Future close() async {
+    final db = await instance.database;
+    return db.close();
   }
 }

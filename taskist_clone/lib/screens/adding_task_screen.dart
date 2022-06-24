@@ -3,7 +3,6 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:todoist/database_helper.dart';
 import 'package:todoist/error_handler.dart';
 import 'package:todoist/models/models.dart';
-import 'package:todoist/theme.dart';
 
 class AddingTasks extends StatefulWidget {
   const AddingTasks({Key? key}) : super(key: key);
@@ -52,7 +51,6 @@ class _AddingTasksState extends State<AddingTasks> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          //TODO: Add to list here
           try {
             await DatabaseHelper.instance.insertTaskTable(TaskTables(
               all_done: 0,

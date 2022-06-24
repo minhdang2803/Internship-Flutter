@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.todoist">
    <application
-        android:label="todoist"
+        android:label="Taskist Clone"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

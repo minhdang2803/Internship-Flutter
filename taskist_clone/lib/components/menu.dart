@@ -16,7 +16,7 @@ enum _MenuOptions {
 }
 
 class Menu extends StatefulWidget {
-  Menu({required this.controller, Key? key, required this.func})
+  const Menu({required this.controller, Key? key, required this.func})
       : super(key: key);
   final Completer<WebViewController> controller;
   final Function(bool) func;

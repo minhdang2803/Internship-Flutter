@@ -74,7 +74,7 @@ class _TaskCardState extends State<TaskCard> {
                       const SizedBox(width: 3),
                       Text(
                         task.name,
-                        style: TaskistThemeProvider.lightTextTheme.headline3,
+                        style: Theme.of(context).textTheme.headline3,
                       )
                     ],
                   );

@@ -4,7 +4,6 @@ import 'package:todoist/components/components.dart';
 import 'package:todoist/database_helper.dart';
 import '../models/tasks.dart';
 import 'screens.dart';
-import '../theme.dart';
 
 class DoneTasks extends StatefulWidget {
   const DoneTasks({Key? key}) : super(key: key);
@@ -104,30 +103,32 @@ class _DoneTasksState extends State<DoneTasks> {
       child: FutureBuilder(
         future: DatabaseHelper.instance.getAllDone(),
         builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
-          if (!snapshot.hasData) {
-            return Center(
-                child: Text('No tasks done',
-                    style: Theme.of(context).textTheme.headline2));
-          } else if (snapshot.hasError) {
-            return Center(
-                child: Text(snapshot.error.toString(),
-                    style: Theme.of(context).textTheme.headline2));
-          } else if (snapshot.hasData) {
-            return ListView.separated(
-              physics: const BouncingScrollPhysics(),
-              scrollDirection: Axis.horizontal,
-              itemBuilder: (context, index) => GestureDetector(
-                child: TaskCard(taskTables: snapshot.data![index]),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          EdittingTasks(task: snapshot.data![index])),
-                ).then((value) => setState(() {})),
-              ),
-              separatorBuilder: (context, index) => const SizedBox(width: 10),
-              itemCount: snapshot.data!.length,
-            );
+          if (snapshot.connectionState == ConnectionState.done) {
+            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+              return ListView.separated(
+                physics: const BouncingScrollPhysics(),
+                scrollDirection: Axis.horizontal,
+                itemBuilder: (context, index) => GestureDetector(
+                  child: TaskCard(taskTables: snapshot.data![index]),
+                  onTap: () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            EdittingTasks(task: snapshot.data![index])),
+                  ).then((value) => setState(() {})),
+                ),
+                separatorBuilder: (context, index) => const SizedBox(width: 10),
+                itemCount: snapshot.data!.length,
+              );
+            } else if (snapshot.data!.isEmpty) {
+              return Center(
+                  child: Text('No tasks done!',
+                      style: Theme.of(context).textTheme.headline3));
+            } else {
+              return Center(
+                  child: Text(snapshot.error.toString(),
+                      style: Theme.of(context).textTheme.headline2));
+            }
           } else {
             return const Center(child: CircularProgressIndicator());
           }
