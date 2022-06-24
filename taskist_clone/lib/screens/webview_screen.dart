@@ -39,7 +39,7 @@ class _WebviewScreenState extends State<WebviewScreen> {
       appBar: AppBar(
         title: Text(
           'Taskist home page',
-          style: TaskistTheme.lightTextTheme.bodyMedium,
+          style: Theme.of(context).textTheme.bodyMedium,
         ),
         actions: [
           NavigationControls(

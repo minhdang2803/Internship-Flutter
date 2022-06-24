@@ -29,7 +29,7 @@ class _AddingTasksState extends State<AddingTasks> {
         titleSpacing: 0,
         title: Text(
           'New List',
-          style: TaskistTheme.lightTextTheme.headline2,
+          style: Theme.of(context).textTheme.headline2,
           textAlign: TextAlign.center,
         ),
         backgroundColor: Colors.transparent,
@@ -65,7 +65,9 @@ class _AddingTasksState extends State<AddingTasks> {
               SnackBar(
                 content: Text(
                   'Table of tasks$getError',
-                  style: TaskistTheme.lightTextTheme.headline3!
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline3!
                       .copyWith(color: _color),
                 ),
               ),
@@ -86,7 +88,7 @@ class _AddingTasksState extends State<AddingTasks> {
     return Text(
       'Add the name of your list 🚀',
       style:
-          TaskistTheme.lightTextTheme.headline3!.copyWith(color: Colors.grey),
+          Theme.of(context).textTheme.headline3!.copyWith(color: Colors.grey),
     );
   }
 
@@ -97,9 +99,9 @@ class _AddingTasksState extends State<AddingTasks> {
       decoration: InputDecoration(
         hintText: 'Your List...',
         border: InputBorder.none,
-        hintStyle: TaskistTheme.lightTextTheme.headline1!.copyWith(
-          color: Colors.grey,
-        ),
+        hintStyle: Theme.of(context).textTheme.headline1!.copyWith(
+              color: Colors.grey,
+            ),
       ),
       style:
           TextStyle(fontSize: 30, fontWeight: FontWeight.bold, color: _color),
@@ -125,9 +127,9 @@ class _AddingTasksState extends State<AddingTasks> {
         builder: (context) => AlertDialog(
           title: Text(
             'Pick Your Color',
-            style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.headline3!.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -136,9 +138,9 @@ class _AddingTasksState extends State<AddingTasks> {
                 TextButton(
                   child: Text(
                     'Select this',
-                    style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.headline3!.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   onPressed: () {
                     Navigator.of(context).pop();

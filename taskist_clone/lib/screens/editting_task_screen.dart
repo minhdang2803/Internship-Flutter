@@ -3,7 +3,6 @@ import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:todoist/database_helper.dart';
 import 'package:todoist/error_handler.dart';
 import '../models/models.dart';
-import '../theme.dart';
 
 class EdittingTasks extends StatefulWidget {
   const EdittingTasks({Key? key, required this.task}) : super(key: key);
@@ -74,9 +73,9 @@ class _EdittingTasksState extends State<EdittingTasks> {
       builder: (context) => AlertDialog(
         title: Text(
           'Add Tasks',
-          style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-            fontWeight: FontWeight.bold,
-          ),
+          style: Theme.of(context).textTheme.headline3!.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
         ),
         content: SizedBox(
           // height: MediaQuery.of(context).size.height * 0.11,
@@ -86,9 +85,9 @@ class _EdittingTasksState extends State<EdittingTasks> {
                 buildTextField(),
                 TextButton(
                   child: Text('Add',
-                      style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      )),
+                      style: Theme.of(context).textTheme.headline3!.copyWith(
+                            fontWeight: FontWeight.bold,
+                          )),
                   onPressed: () async {
                     try {
                       DatabaseHelper.instance.insertTask(
@@ -108,7 +107,9 @@ class _EdittingTasksState extends State<EdittingTasks> {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
                           content: Text('Task$getError',
-                              style: TaskistTheme.lightTextTheme.headline3!
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline3!
                                   .copyWith(color: _color)),
                         ),
                       );
@@ -156,11 +157,15 @@ class _EdittingTasksState extends State<EdittingTasks> {
                           SnackBar(
                             content: Text(
                               '${task.name} dismissed',
-                              style: TaskistTheme.lightTextTheme.headline3!
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headline3!
                                   .copyWith(color: _color),
                             ),
                           ),
                         );
+                        DatabaseHelper.instance
+                            .setDone(tasktable: widget.task!);
                         setState(() {});
                       },
                       background: Container(
@@ -197,7 +202,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
             } else if (snapshot.hasError) {
               return Center(
                   child: Text(snapshot.error.toString(),
-                      style: TaskistTheme.lightTextTheme.headline2));
+                      style: Theme.of(context).textTheme.headline2));
             } else {
               return const Center(child: CircularProgressIndicator());
             }
@@ -218,7 +223,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
         RichText(
           text: TextSpan(
             text: task.name,
-            style: TaskistTheme.lightTextTheme.headline1!.copyWith(
+            style: Theme.of(context).textTheme.headline1!.copyWith(
                 fontWeight: FontWeight.normal,
                 decoration: isDone == 1
                     ? TextDecoration.lineThrough
@@ -264,7 +269,9 @@ class _EdittingTasksState extends State<EdittingTasks> {
       contentPadding: EdgeInsets.zero,
       dense: true,
       leading: Text(_name,
-          style: TaskistTheme.lightTextTheme.headline3!
+          style: Theme.of(context)
+              .textTheme
+              .headline3!
               .copyWith(fontSize: 40, fontWeight: FontWeight.bold)),
       trailing: IconButton(
         padding: EdgeInsets.zero,
@@ -305,9 +312,9 @@ class _EdittingTasksState extends State<EdittingTasks> {
         builder: (context) => AlertDialog(
           title: Text(
             'Pick Your Color',
-            style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-              fontWeight: FontWeight.bold,
-            ),
+            style: Theme.of(context).textTheme.headline3!.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
           ),
           content: SingleChildScrollView(
             child: Column(
@@ -315,9 +322,9 @@ class _EdittingTasksState extends State<EdittingTasks> {
                 buildColorPicker(),
                 TextButton(
                   child: Text('Select this',
-                      style: TaskistTheme.lightTextTheme.headline3!.copyWith(
-                        fontWeight: FontWeight.bold,
-                      )),
+                      style: Theme.of(context).textTheme.headline3!.copyWith(
+                            fontWeight: FontWeight.bold,
+                          )),
                   onPressed: () {
                     DatabaseHelper.instance
                         .setColor(taskTables: widget.task!, color: _color);

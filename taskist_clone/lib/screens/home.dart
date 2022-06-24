@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
-import 'package:hive/hive.dart';
 import 'package:todoist/screens/screens.dart';
-
 
 class Homepage extends StatefulWidget {
   const Homepage({Key? key}) : super(key: key);
-
   @override
   State<Homepage> createState() => _HomepageState();
 }
 
 class _HomepageState extends State<Homepage> {
+  late bool check;
+
   int _selectedIndex = 1;
   List<Widget> pages = [
     const DoneTasks(),
@@ -33,12 +32,6 @@ class _HomepageState extends State<Homepage> {
     // ignore_for_file: avoid_print
     await Future.delayed(const Duration(seconds: 2));
     FlutterNativeSplash.remove();
-  }
-
-  @override
-  void dispose() {
-    Hive.close();
-    super.dispose();
   }
 
   void setIndex(int index) => setState(() => _selectedIndex = index);

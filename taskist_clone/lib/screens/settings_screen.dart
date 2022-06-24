@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:todoist/provider/setting_provider.dart';
 import 'package:todoist/screens/webview_screen.dart';
-import '../controller/controllers.dart';
-import 'dart:async';
+import 'package:todoist/theme.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({Key? key}) : super(key: key);
-
   @override
   State<SettingsScreen> createState() => _SettingsScreenState();
 }
@@ -42,36 +42,36 @@ class _SettingsScreenState extends State<SettingsScreen> {
   Widget buildLine(BuildContext context) {
     return Row(
       children: [
-        const Expanded(
+        Expanded(
           child: Divider(
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.primary,
+            thickness: 2,
           ),
         ),
         SizedBox(width: MediaQuery.of(context).size.width * 0.1),
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
                   text: "Task",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  )),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headline3!
+                      .copyWith(fontSize: 30, fontWeight: FontWeight.bold)),
               TextSpan(
                   text: "Settings",
-                  style: TextStyle(
-                    color: Colors.black45,
-                    fontSize: 30,
-                    fontWeight: FontWeight.w400,
-                  )),
+                  style: Theme.of(context).textTheme.headline3!.copyWith(
+                      fontSize: 30,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w300)),
             ],
           ),
         ),
         SizedBox(width: MediaQuery.of(context).size.width * 0.1),
-        const Expanded(
+        Expanded(
           child: Divider(
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.primary,
+            thickness: 2,
           ),
         )
       ],
@@ -86,8 +86,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
         child: Column(
           children: [
-            buildEachOption(
-                const Icon(Icons.settings), 'Settings', const Text('1.1.0')),
+            buildDarkModeOption(context),
             GestureDetector(
               child: buildEachOption(
                 Image(
@@ -124,6 +123,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
       leading: icon,
       title: Text(title),
       trailing: trailing,
+    );
+  }
+
+  Widget buildDarkModeOption(BuildContext context) {
+    return ListTile(
+      leading: const Icon(Icons.dark_mode),
+      title: const Text('Dark mode'),
+      trailing: Switch(
+        value: Provider.of<TaskistThemeProvider>(context, listen: false)
+            .getDarkMode,
+        onChanged: (value) {
+          Provider.of<TaskistThemeProvider>(context, listen: false)
+              .swapTheme(value);
+        },
+      ),
     );
   }
 }

@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todoist/theme.dart';
 import 'screens/screens.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
-Future main() async {
+Future<void> main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  final prefs = await SharedPreferences.getInstance();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-  runApp(const TaskistClone());
+  runApp(
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (context) =>
+                TaskistThemeProvider(isDarkMode: prefs.getBool('isDarkTheme')!))
+      ],
+      child: const TaskistClone(),
+    ),
+  );
 }
 
 class TaskistClone extends StatefulWidget {
@@ -17,14 +29,17 @@ class TaskistClone extends StatefulWidget {
 }
 
 class _TaskistCloneState extends State<TaskistClone> {
-  ThemeData theme = TaskistTheme.light();
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: theme,
-      title: "Taskist Clone",
-      home: const Homepage(),
+    return Consumer<TaskistThemeProvider>(
+      builder: (context, value, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: value.getTheme,
+          title: "Taskist Clone",
+          home: const Homepage(),
+        );
+      },
     );
   }
 }

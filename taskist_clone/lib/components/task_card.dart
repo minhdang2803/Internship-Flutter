@@ -24,7 +24,7 @@ class _TaskCardState extends State<TaskCard> {
         children: [
           const SizedBox(height: 20),
           Text(widget.taskTables.name,
-              style: TaskistTheme.lightTextTheme.headline3!
+              style: TaskistThemeProvider.lightTextTheme.headline3!
                   .copyWith(color: Colors.white)),
           const SizedBox(height: 20),
           buildDividerLine(context),
@@ -55,11 +55,11 @@ class _TaskCardState extends State<TaskCard> {
             if (!snapshot.hasData) {
               return Center(
                   child: Text('No tasks done',
-                      style: TaskistTheme.lightTextTheme.headline2));
+                      style: TaskistThemeProvider.lightTextTheme.headline2));
             } else if (snapshot.hasError) {
               return Center(
                   child: Text(snapshot.error.toString(),
-                      style: TaskistTheme.lightTextTheme.headline2));
+                      style: TaskistThemeProvider.lightTextTheme.headline2));
             } else if (snapshot.hasData) {
               return ListView.separated(
                 separatorBuilder: (context, index) => const SizedBox(height: 5),
@@ -74,7 +74,7 @@ class _TaskCardState extends State<TaskCard> {
                       const SizedBox(width: 3),
                       Text(
                         task.name,
-                        style: TaskistTheme.lightTextTheme.headline3,
+                        style: TaskistThemeProvider.lightTextTheme.headline3,
                       )
                     ],
                   );

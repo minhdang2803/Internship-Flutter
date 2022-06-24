@@ -50,8 +50,8 @@ class _DoneTasksState extends State<DoneTasks> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(dateOfWeek, style: TaskistTheme.lightTextTheme.headline2),
-          Text(date, style: TaskistTheme.lightTextTheme.headline2),
+          Text(dateOfWeek, style: Theme.of(context).textTheme.headline2),
+          Text(date, style: Theme.of(context).textTheme.headline2),
         ],
       ),
     );
@@ -61,36 +61,37 @@ class _DoneTasksState extends State<DoneTasks> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        const Flexible(
+        Flexible(
           child: Divider(
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.primary,
+            thickness: 2,
           ),
         ),
         const SizedBox(width: 50),
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
                   text: "Tasks",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  )),
+                  style: Theme.of(context).textTheme.headline2!.copyWith(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      )),
               TextSpan(
-                  text: "Done",
-                  style: TextStyle(
-                    color: Colors.black45,
+                text: "Done",
+                style: Theme.of(context).textTheme.headline3!.copyWith(
                     fontSize: 30,
-                    fontWeight: FontWeight.w400,
-                  )),
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w300),
+              ),
             ],
           ),
         ),
         const SizedBox(width: 50),
-        const Flexible(
+        Flexible(
           child: Divider(
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.primary,
+            thickness: 2,
           ),
         ),
       ],
@@ -106,11 +107,11 @@ class _DoneTasksState extends State<DoneTasks> {
           if (!snapshot.hasData) {
             return Center(
                 child: Text('No tasks done',
-                    style: TaskistTheme.lightTextTheme.headline2));
+                    style: Theme.of(context).textTheme.headline2));
           } else if (snapshot.hasError) {
             return Center(
                 child: Text(snapshot.error.toString(),
-                    style: TaskistTheme.lightTextTheme.headline2));
+                    style: Theme.of(context).textTheme.headline2));
           } else if (snapshot.hasData) {
             return ListView.separated(
               physics: const BouncingScrollPhysics(),

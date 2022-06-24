@@ -52,8 +52,8 @@ class _AddedTasksState extends State<AddedTasks> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(dateOfWeek, style: TaskistTheme.lightTextTheme.headline2),
-          Text(date, style: TaskistTheme.lightTextTheme.headline2),
+          Text(dateOfWeek, style: Theme.of(context).textTheme.headline2),
+          Text(date, style: Theme.of(context).textTheme.headline2),
         ],
       ),
     );
@@ -63,37 +63,36 @@ class _AddedTasksState extends State<AddedTasks> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
-        const Flexible(
+        Flexible(
           child: Divider(
-            color: Colors.black,
+            color: Theme.of(context).colorScheme.primary,
+            thickness: 2,
           ),
         ),
         const SizedBox(width: 50),
         RichText(
-          text: const TextSpan(
+          text: TextSpan(
             children: [
               TextSpan(
                   text: "Task",
-                  style: TextStyle(
-                    color: Colors.black,
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  )),
+                  style: Theme.of(context).textTheme.headline2!.copyWith(
+                        fontSize: 30,
+                        fontWeight: FontWeight.bold,
+                      )),
               TextSpan(
-                  text: "Lists",
-                  style: TextStyle(
-                    color: Colors.black45,
+                text: "Lists",
+                style: Theme.of(context).textTheme.headline3!.copyWith(
                     fontSize: 30,
-                    fontWeight: FontWeight.w400,
-                  )),
+                    color: Colors.grey,
+                    fontWeight: FontWeight.w300),
+              ),
             ],
           ),
         ),
         const SizedBox(width: 50),
-        const Flexible(
+        Flexible(
           child: Divider(
-            color: Colors.black,
-          ),
+              color: Theme.of(context).colorScheme.primary, thickness: 2),
         ),
       ],
     );
@@ -105,8 +104,7 @@ class _AddedTasksState extends State<AddedTasks> {
         Container(
           decoration: BoxDecoration(
             border: Border.all(
-              color: Colors.black45,
-            ),
+                color: Theme.of(context).colorScheme.primary, width: 2.0),
             borderRadius: BorderRadius.circular(10),
           ),
           child: IconButton(
@@ -120,9 +118,11 @@ class _AddedTasksState extends State<AddedTasks> {
           ),
         ),
         const SizedBox(height: 10),
-        const Text(
+        Text(
           'Add List',
-          style: TextStyle(color: Colors.black45),
+          style: TextStyle(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w500),
         )
       ],
     );
@@ -138,7 +138,7 @@ class _AddedTasksState extends State<AddedTasks> {
             return Center(
               child: Text(
                 snapshot.error.toString(),
-                style: TaskistTheme.lightTextTheme.headline2,
+                style: Theme.of(context).textTheme.headline3,
               ),
             );
           } else if (snapshot.hasData) {
