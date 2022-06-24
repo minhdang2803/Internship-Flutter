@@ -90,7 +90,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
                           )),
                   onPressed: () async {
                     try {
-                      DatabaseHelper.instance.insertTask(
+                      await DatabaseHelper.instance.insertTask(
                           task: Task(
                             check_val: '0',
                             name: _controller.text,
@@ -98,10 +98,12 @@ class _EdittingTasksState extends State<EdittingTasks> {
                           ),
                           taskTables: widget.task!);
                       _controller.clear();
-                      DatabaseHelper.instance.setDone(tasktable: widget.task!);
+                      await DatabaseHelper.instance
+                          .setDone(tasktable: widget.task!);
                       _ratio =
                           await DatabaseHelper.instance.countDone(widget.task!);
                     } catch (error) {
+                      print(error.toString());
                       _error = error.toString();
                       String getError = ErrorHandler.getError(_error!);
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -116,7 +118,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
                         ),
                       );
                     }
-                    setState(() {});
+                    // setState(() {});
                     Navigator.pop(context, true);
                   },
                 ),

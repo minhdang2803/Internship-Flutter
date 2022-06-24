@@ -52,7 +52,7 @@ class _AddingTasksState extends State<AddingTasks> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           try {
-            await DatabaseHelper.instance.insertTaskTable(TaskTables(
+            DatabaseHelper.instance.insertTaskTable(TaskTables(
               all_done: 0,
               color: _color.value.toString(),
               name: _controller.text,
