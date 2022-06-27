@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:todoist/database_helper.dart';
 import 'package:todoist/models/models.dart';
-import 'package:todoist/theme.dart';
+import 'package:todoist/providers/theme_manager.dart';
 
 class TaskCard extends StatefulWidget {
   const TaskCard({Key? key, required this.taskTables}) : super(key: key);

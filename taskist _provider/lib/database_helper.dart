@@ -50,17 +50,17 @@ class DatabaseHelper {
 """);
   }
 
-  Future<List<TaskTables>> getTaskTables() async {
-    final db = await instance.database;
-    final tasktables = await db.query(_taskTable,
-        columns: ['id', 'name', 'color', 'all_done'],
-        where: 'all_done = ?',
-        whereArgs: [0]);
-    List<TaskTables> ret = tasktables.isNotEmpty
-        ? tasktables.map((task) => TaskTables.fromJson(task)).toList()
-        : [];
-    return ret;
-  }
+  // Future<List<TaskTables>> getTaskTables() async {
+  //   final db = await instance.database;
+  //   final tasktables = await db.query(_taskTable,
+  //       columns: ['id', 'name', 'color', 'all_done'],
+  //       where: 'all_done = ?',
+  //       whereArgs: [0]);
+  //   List<TaskTables> ret = tasktables.isNotEmpty
+  //       ? tasktables.map((task) => TaskTables.fromJson(task)).toList()
+  //       : [];
+  //   return ret;
+  // }
 
   Future<int> insertTaskTable(TaskTables taskTable) async {
     final db = await instance.database;

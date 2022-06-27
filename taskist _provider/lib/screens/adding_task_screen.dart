@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:flutter_provider/flutter_provider.dart';
 import 'package:todoist/database_helper.dart';
 import 'package:todoist/error_handler.dart';
 import 'package:todoist/models/models.dart';
+import 'package:todoist/providers/providers.dart';
 
 class AddingTasks extends StatefulWidget {
   const AddingTasks({Key? key}) : super(key: key);
@@ -50,27 +52,34 @@ class _AddingTasksState extends State<AddingTasks> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          try {
-            DatabaseHelper.instance.insertTaskTable(TaskTables(
-              all_done: 0,
-              color: _color.value.toString(),
-              name: _controller.text,
-            ));
-          } catch (error) {
-            String getError = ErrorHandler.getError(error.toString());
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  'Table of tasks$getError',
-                  style: Theme.of(context)
-                      .textTheme
-                      .headline3!
-                      .copyWith(color: _color),
-                ),
-              ),
-            );
-          }
+        onPressed: () {
+          // try {
+          //   Provider.of<TaskManager>(context, listen: false)
+          //       .insertTaskTable(TaskTables(
+          //     all_done: 0,
+          //     color: _color.value.toString(),
+          //     name: _controller.text,
+          //   ));
+          // } catch (error) {
+          //   String getError = ErrorHandler.getError(error.toString());
+          //   ScaffoldMessenger.of(context).showSnackBar(
+          //     SnackBar(
+          //       content: Text(
+          //         'Table of tasks$getError',
+          //         style: Theme.of(context)
+          //             .textTheme
+          //             .headline3!
+          //             .copyWith(color: _color),
+          //       ),
+          //     ),
+          //   );
+          // }
+          Provider.of<TaskManager>(context, listen: false)
+              .insertTaskTable(TaskTables(
+            all_done: 0,
+            color: _color.value.toString(),
+            name: _controller.text,
+          ));
           _controller.clear();
           Navigator.pop(context, true);
         },

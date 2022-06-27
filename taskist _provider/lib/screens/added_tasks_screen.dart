@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:todoist/components/components.dart';
 import 'package:todoist/database_helper.dart';
 import 'package:todoist/models/models.dart';
+import 'package:todoist/providers/providers.dart';
 import 'screens.dart';
 
 class AddedTasks extends StatefulWidget {
@@ -110,9 +112,12 @@ class _AddedTasksState extends State<AddedTasks> {
             onPressed: () => Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const AddingTasks(),
+                builder: (context) => ListenableProvider<TaskManager>.value(
+                  value: Provider.of<TaskManager>(context),
+                  child: const AddingTasks(),
+                ),
               ),
-            ).then((value) => setState(() {})),
+            ),
             icon: const Icon(Icons.add, size: 30),
           ),
         ),
@@ -131,7 +136,8 @@ class _AddedTasksState extends State<AddedTasks> {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 35),
       child: FutureBuilder(
-        future: DatabaseHelper.instance.getTaskTables(),
+        future:
+            Provider.of<TaskManager>(context, listen: false).getTaskTables(),
         builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             if (snapshot.hasData) {
@@ -170,12 +176,16 @@ class _AddedTasksState extends State<AddedTasks> {
         TaskTables tasktable = snapshot.data![index];
         return GestureDetector(
           onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) => EdittingTasks(
-                        task: tasktable,
-                      ))).then(
-            (value) => setState(() {}),
+            context,
+            //! Passing Provider to the Adding Screen
+            MaterialPageRoute(
+              builder: (context) => ChangeNotifierProvider(
+                create: (create) => TaskManager(),
+                child: EdittingTasks(
+                  task: tasktable,
+                ),
+              ),
+            ),
           ),
           onLongPress: () {
             DatabaseHelper.instance.deleteItem(tasktable);

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:todoist/database_helper.dart';
-import 'package:todoist/theme.dart';
+import 'package:todoist/providers/providers.dart';
 import 'screens/screens.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';
 
@@ -11,12 +11,17 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
+
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(
-            create: (context) =>
-                TaskistThemeProvider(isDarkMode: prefs.getBool('isDarkTheme')?? false))
+          create: (context) => TaskistThemeProvider(
+              isDarkMode: prefs.getBool('isDarkTheme') ?? false),
+        ),
+        ChangeNotifierProvider(
+          create: (context) => TaskManager(),
+        )
       ],
       child: const TaskistClone(),
     ),
