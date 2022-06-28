@@ -9,8 +9,6 @@ class Homepage extends StatefulWidget {
 }
 
 class _HomepageState extends State<Homepage> {
-  late bool check;
-
   int _selectedIndex = 1;
   List<Widget> pages = [
     const DoneTasks(),
