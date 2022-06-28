@@ -36,7 +36,9 @@ class _HomepageState extends State<Homepage> {
       taskManager.initDatabase();
       return Scaffold(
         body: SafeArea(
-          child: Center(child: pages[taskManager.getCurrentTab]),
+          child: Center(
+            child: pages[taskManager.getCurrentTab],
+          ),
         ),
         bottomNavigationBar: BottomNavigationBar(
           items: const <BottomNavigationBarItem>[

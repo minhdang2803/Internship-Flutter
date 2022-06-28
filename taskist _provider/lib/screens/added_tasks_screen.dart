@@ -32,7 +32,7 @@ class _AddedTasksState extends State<AddedTasks> {
             const SizedBox(height: 20),
             buildVerticalLine(),
             const SizedBox(height: 30),
-            buildAddTaskButton(),
+            buildAddTaskButton(context),
             const SizedBox(height: 40),
             Expanded(child: buildTasksList(context)),
             SizedBox(
@@ -76,13 +76,13 @@ class _AddedTasksState extends State<AddedTasks> {
             children: [
               TextSpan(
                   text: "Task",
-                  style: Theme.of(context).textTheme.headline2!.copyWith(
+                  style: Theme.of(context).textTheme.headline2?.copyWith(
                         fontSize: 30,
                         fontWeight: FontWeight.bold,
                       )),
               TextSpan(
                 text: "Lists",
-                style: Theme.of(context).textTheme.headline3!.copyWith(
+                style: Theme.of(context).textTheme.headline3?.copyWith(
                     fontSize: 30,
                     color: Colors.grey,
                     fontWeight: FontWeight.w300),
@@ -99,7 +99,7 @@ class _AddedTasksState extends State<AddedTasks> {
     );
   }
 
-  Widget buildAddTaskButton() {
+  Widget buildAddTaskButton(context) {
     return Column(
       children: [
         Container(
@@ -111,13 +111,8 @@ class _AddedTasksState extends State<AddedTasks> {
           child: IconButton(
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ListenableProvider<TaskManager>.value(
-                  value: Provider.of<TaskManager>(context),
-                  child: const AddingTasks(),
-                ),
-              ),
-            ),
+              MaterialPageRoute(builder: (context) => AddingTasks()),
+            ).then((value) => setState(() {})),
             icon: const Icon(Icons.add, size: 30),
           ),
         ),

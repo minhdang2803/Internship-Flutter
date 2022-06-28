@@ -1,4 +1,4 @@
-import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:todoist/database_helper.dart';
 
@@ -17,7 +17,8 @@ class TaskManager extends ChangeNotifier {
   late Database _database;
   static const _taskTable = 'TaskTables';
   static const _task = 'Tasks';
-
+  Color _color = Colors.blue.shade300;
+  Color get getColor => _color;
   Future<void> initDatabase() async {
     _database = await DatabaseHelper.instance.database;
   }
@@ -37,11 +38,29 @@ class TaskManager extends ChangeNotifier {
   }
 
   Future<int> insertTaskTable(TaskTables taskTable) async {
+    _database = await DatabaseHelper.instance.database;
     final db = await _database.insert(
       _taskTable,
       taskTable.toJson(),
     );
     notifyListeners();
     return db;
+  }
+
+  void setColor(Color color) {
+    _color = color;
+    notifyListeners();
+  }
+
+  void showSnackBar(BuildContext context, String content, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Table of tasks$content',
+          style: Theme.of(context).textTheme.headline3!.copyWith(color: color),
+        ),
+      ),
+    );
+    notifyListeners();
   }
 }

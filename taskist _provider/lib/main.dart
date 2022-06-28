@@ -11,18 +11,11 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
-
+  final taskistThemeProvider =
+      TaskistThemeProvider(isDarkMode: prefs.getBool('isDarkTheme') ?? false);
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => TaskistThemeProvider(
-              isDarkMode: prefs.getBool('isDarkTheme') ?? false),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => TaskManager(),
-        )
-      ],
+    ChangeNotifierProvider(
+      create: (context) => taskistThemeProvider,
       child: const TaskistClone(),
     ),
   );
@@ -36,6 +29,7 @@ class TaskistClone extends StatefulWidget {
 }
 
 class _TaskistCloneState extends State<TaskistClone> {
+  final taskManager = TaskManager();
   @override
   void dispose() {
     super.dispose();
@@ -44,15 +38,18 @@ class _TaskistCloneState extends State<TaskistClone> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TaskistThemeProvider>(
-      builder: (context, value, child) {
-        return MaterialApp(
-          debugShowCheckedModeBanner: false,
-          theme: value.getTheme,
-          title: "Taskist Clone",
-          home: const Homepage(),
-        );
-      },
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (context) => taskManager)],
+      child: Consumer<TaskistThemeProvider>(
+        builder: (context, value, child) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: value.getTheme,
+            title: "Taskist Clone",
+            home: const Homepage(),
+          );
+        },
+      ),
     );
   }
 }

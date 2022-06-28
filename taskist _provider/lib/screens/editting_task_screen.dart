@@ -77,53 +77,50 @@ class _EdittingTasksState extends State<EdittingTasks> {
                 fontWeight: FontWeight.bold,
               ),
         ),
-        content: SizedBox(
-          // height: MediaQuery.of(context).size.height * 0.11,
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                buildTextField(),
-                TextButton(
-                  child: Text('Add',
-                      style: Theme.of(context).textTheme.headline3!.copyWith(
-                            fontWeight: FontWeight.bold,
-                          )),
-                  onPressed: () async {
-                    try {
-                      await DatabaseHelper.instance.insertTask(
-                          task: Task(
-                            check_val: '0',
-                            name: _controller.text,
-                            taskTables_name: widget.task!.name,
-                          ),
-                          taskTables: widget.task!);
-                      _controller.clear();
-                      await DatabaseHelper.instance
-                          .setDone(tasktable: widget.task!);
-                      _ratio =
-                          await DatabaseHelper.instance.countDone(widget.task!);
-                    } catch (error) {
-                      print(error.toString());
-                      _error = error.toString();
-                      String getError = ErrorHandler.getError(_error!);
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor:
-                              Theme.of(context).colorScheme.primary,
-                          content: Text('Task$getError',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline3!
-                                  .copyWith(color: _color)),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              buildTextField(),
+              TextButton(
+                child: Text('Add',
+                    style: Theme.of(context).textTheme.headline3!.copyWith(
+                          fontWeight: FontWeight.bold,
+                        )),
+                onPressed: () async {
+                  try {
+                    await DatabaseHelper.instance.insertTask(
+                        task: Task(
+                          check_val: '0',
+                          name: _controller.text,
+                          taskTables_name: widget.task!.name,
                         ),
-                      );
-                    }
-                    // setState(() {});
-                    Navigator.pop(context, true);
-                  },
-                ),
-              ],
-            ),
+                        taskTables: widget.task!);
+                    _controller.clear();
+                    await DatabaseHelper.instance
+                        .setDone(tasktable: widget.task!);
+                    _ratio =
+                        await DatabaseHelper.instance.countDone(widget.task!);
+                  } catch (error) {
+                    print(error.toString());
+                    _error = error.toString();
+                    String getError = ErrorHandler.getError(_error!);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        backgroundColor:
+                            Theme.of(context).colorScheme.primary,
+                        content: Text('Task$getError',
+                            style: Theme.of(context)
+                                .textTheme
+                                .headline3!
+                                .copyWith(color: _color)),
+                      ),
+                    );
+                  }
+                  // setState(() {});
+                  Navigator.pop(context, true);
+                },
+              ),
+            ],
           ),
         ),
       ),
