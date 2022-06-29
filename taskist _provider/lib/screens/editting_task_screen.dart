@@ -1,42 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
-import 'package:todoist/database_helper.dart';
+import 'package:provider/provider.dart';
 import 'package:todoist/error_handler.dart';
+import 'package:todoist/utils/utils_functions.dart';
 import '../models/models.dart';
+import '../providers/providers.dart';
 
-class EdittingTasks extends StatefulWidget {
-  const EdittingTasks({Key? key, required this.task}) : super(key: key);
-  final TaskTables? task;
-  @override
-  State<EdittingTasks> createState() => _EdittingTasksState();
-}
-
-class _EdittingTasksState extends State<EdittingTasks> {
-  late String? _error;
-  late Color _color;
-  late String _name;
-  double _ratio = 0;
+class EdittingTasks extends StatelessWidget {
+  EdittingTasks({Key? key, required this.taskTable}) : super(key: key);
+  final TaskTables taskTable;
   final _controller = TextEditingController();
-  @override
-  void initState() {
-    super.initState();
-    if (widget.task != null) {
-      _color = Color(int.parse(widget.task!.color));
-      // _tasks = widget.task!.tasks;
-      _name = widget.task!.name;
-    } else {
-      _color = Colors.blue;
-      // _tasks = [];
-      _name = 'task';
-    }
-    _error = null;
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
-    _controller.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +17,6 @@ class _EdittingTasksState extends State<EdittingTasks> {
       body: SafeArea(
         child: SizedBox(
           child: Column(
-            // crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               SizedBox(height: MediaQuery.of(context).size.height * 0.025),
               buildTopBar(context),
@@ -56,67 +28,60 @@ class _EdittingTasksState extends State<EdittingTasks> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        backgroundColor: _color,
-        onPressed: () {
-          buildAddTasks(context);
-          setState(() {});
-        },
-        child: const Icon(Icons.add),
-      ),
+      floatingActionButton: buildFloatingActionButton(context),
     );
   }
 
-  void buildAddTasks(BuildContext context) {
+  Widget buildFloatingActionButton(BuildContext context) {
+    return Consumer<TaskManager>(builder: (context, taskManager, child) {
+      return FloatingActionButton(
+        backgroundColor: taskManager.getEditingColor,
+        onPressed: () {
+          buildAddTasks(context, taskManager);
+          _controller.clear();
+        },
+        child: const Icon(Icons.add),
+      );
+    });
+  }
+
+  void buildAddTasks(BuildContext context, TaskManager taskManager) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         title: Text(
           'Add Tasks',
-          style: Theme.of(context).textTheme.headline3!.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(context)
+              .textTheme
+              .headline3!
+              .copyWith(fontWeight: FontWeight.bold),
         ),
         content: SingleChildScrollView(
           child: Column(
             children: [
-              buildTextField(),
+              buildTextField(context, taskManager),
               TextButton(
                 child: Text('Add',
-                    style: Theme.of(context).textTheme.headline3!.copyWith(
-                          fontWeight: FontWeight.bold,
-                        )),
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline3!
+                        .copyWith(fontWeight: FontWeight.bold)),
                 onPressed: () async {
                   try {
-                    await DatabaseHelper.instance.insertTask(
+                    await taskManager.insertTask(
                         task: Task(
                           check_val: '0',
                           name: _controller.text,
-                          taskTables_name: widget.task!.name,
+                          taskTables_name: taskTable.name,
                         ),
-                        taskTables: widget.task!);
+                        taskTables: taskTable);
                     _controller.clear();
-                    await DatabaseHelper.instance
-                        .setDone(tasktable: widget.task!);
-                    _ratio =
-                        await DatabaseHelper.instance.countDone(widget.task!);
+                    await taskManager.setDone(tasktable: taskTable);
+                    taskManager.updateRatio(taskTable);
                   } catch (error) {
-                    print(error.toString());
-                    _error = error.toString();
-                    String getError = ErrorHandler.getError(_error!);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor:
-                            Theme.of(context).colorScheme.primary,
-                        content: Text('Task$getError',
-                            style: Theme.of(context)
-                                .textTheme
-                                .headline3!
-                                .copyWith(color: _color)),
-                      ),
-                    );
+                    String getError = ErrorHandler.getError(error.toString());
+                    buildErrorSnackBar(context, 'Task $getError', taskManager);
                   }
-                  // setState(() {});
                   Navigator.pop(context, true);
                 },
               ),
@@ -127,7 +92,7 @@ class _EdittingTasksState extends State<EdittingTasks> {
     );
   }
 
-  Widget buildTextField() {
+  Widget buildTextField(BuildContext context, TaskManager taskManager) {
     return TextField(
       controller: _controller,
       decoration: const InputDecoration(),
@@ -138,96 +103,81 @@ class _EdittingTasksState extends State<EdittingTasks> {
     return Expanded(
       child: Padding(
         padding: EdgeInsets.only(
-            left: MediaQuery.of(context).size.width * 0.1,
-            bottom: MediaQuery.of(context).size.width * 0.1),
-        child: FutureBuilder(
-          future: DatabaseHelper.instance.getTasks(widget.task),
-          builder: (context, AsyncSnapshot<List<Task>> snapshot) {
-            if (snapshot.hasData) {
-              return ListView.separated(
-                  itemBuilder: (item, index) {
-                    Task task = snapshot.data![index];
-                    return Dismissible(
-                      direction: DismissDirection.endToStart,
-                      onDismissed: (direction) {
-                        DatabaseHelper.instance.deleteCurrentTask(
-                          task: task,
-                          tasktable: widget.task!,
-                        );
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            backgroundColor:
-                                Theme.of(context).colorScheme.primary,
-                            content: Text(
-                              '${task.name} dismissed',
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .headline3!
-                                  .copyWith(color: _color),
-                            ),
-                          ),
-                        );
-                        DatabaseHelper.instance
-                            .setDone(tasktable: widget.task!);
-                        setState(() {});
-                      },
-                      background: Container(
-                        padding: const EdgeInsets.only(right: 10),
-                        color: Colors.red,
-                        alignment: Alignment.centerRight,
-                        child: const Icon(
-                          Icons.delete_forever,
-                          color: Colors.white,
-                          size: 30.0,
-                        ),
-                      ),
-                      key: UniqueKey(),
-                      child: GestureDetector(
-                        child: smallTasks(task, task.check_val),
-                        onTap: () async {
-                          DatabaseHelper.instance.updateCurrentTask(
-                            tasktable: widget.task!,
+          left: MediaQuery.of(context).size.width * 0.05,
+          bottom: MediaQuery.of(context).size.width * 0.05,
+          right: MediaQuery.of(context).size.width * 0.05,
+        ),
+        child: Consumer<TaskManager>(builder: (context, taskManager, child) {
+          return FutureBuilder(
+            future: taskManager.getTasks(taskTable),
+            builder: (context, AsyncSnapshot<List<Task>> snapshot) {
+              if (snapshot.hasData) {
+                return ListView.separated(
+                    itemBuilder: (item, index) {
+                      Task task = snapshot.data![index];
+                      return GestureDetector(
+                        onTap: () {
+                          taskManager.updateCurrentTask(
+                            tasktable: taskTable,
                             task: task,
                             currentValue: task.check_val == '0' ? '1' : '0',
                           );
-                          DatabaseHelper.instance
-                              .setDone(tasktable: widget.task!);
-                          _ratio = await DatabaseHelper.instance
-                              .countDone(widget.task!);
-                          setState(() {});
+                          taskManager.setDone(tasktable: taskTable);
+                          taskManager.updateRatio(taskTable);
                         },
-                      ),
-                    );
-                  },
-                  separatorBuilder: (item, index) => SizedBox(
-                      height: MediaQuery.of(context).size.height * 0.015),
-                  itemCount: snapshot.data!.length);
-            } else if (snapshot.hasError) {
-              return Center(
-                  child: Text(snapshot.error.toString(),
-                      style: Theme.of(context).textTheme.headline2));
-            } else {
-              return const Center(child: CircularProgressIndicator());
-            }
-          },
-        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            smallTasks(
+                                context, task, task.check_val, taskManager),
+                            IconButton(
+                                onPressed: () {
+                                  taskManager.deleteCurrentTask(
+                                      tasktable: taskTable, task: task);
+                                  taskManager.setDone(tasktable: taskTable);
+                                  taskManager.updateRatio(taskTable);
+                                },
+                                icon: Icon(
+                                  Icons.delete,
+                                  color: taskManager.getEditingColor,
+                                ))
+                          ],
+                        ),
+                      );
+                    },
+                    separatorBuilder: (item, index) => SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.015),
+                    itemCount: snapshot.data!.length);
+              } else if (snapshot.hasError) {
+                return Center(
+                    child: Text(snapshot.error.toString(),
+                        style: Theme.of(context).textTheme.headline2));
+              } else {
+                return const Center(child: CircularProgressIndicator());
+              }
+            },
+          );
+        }),
       ),
     );
   }
 
-  Widget smallTasks(Task task, String check) {
+  Widget smallTasks(
+      BuildContext context, Task task, String check, TaskManager taskManager) {
     int isDone = int.parse(check);
+    Color color = taskManager.getEditingColor;
     return Row(
       children: [
         task.check_val == '0'
-            ? const Icon(Icons.check_box_outline_blank)
-            : const Icon(Icons.check_box),
+            ? Icon(Icons.check_box_outline_blank, color: color)
+            : Icon(Icons.check_box, color: color),
         const SizedBox(width: 20),
         RichText(
           text: TextSpan(
             text: task.name,
-            style: Theme.of(context).textTheme.headline1!.copyWith(
-                fontWeight: FontWeight.normal,
+            style: Theme.of(context).textTheme.headline2!.copyWith(
+                decorationColor: color,
+                fontWeight: FontWeight.w200,
                 decoration: isDone == 1
                     ? TextDecoration.lineThrough
                     : TextDecoration.none,
@@ -239,39 +189,44 @@ class _EdittingTasksState extends State<EdittingTasks> {
   }
 
   Widget buildTitle(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(
-          horizontal: MediaQuery.of(context).size.width * 0.05),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          buildTitleOfTask(context),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.010),
-          Text("${(_ratio * 100).toInt()}% of tasks"),
-          SizedBox(height: MediaQuery.of(context).size.height * 0.010),
-          Row(
+    return Consumer<TaskManager>(
+      builder: (context, taskManager, child) {
+        return Padding(
+          padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width * 0.05),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Expanded(
-                child: LinearProgressIndicator(
-                  color: _color,
-                  value: _ratio,
-                  backgroundColor: _color.withOpacity(0.2),
-                ),
+              buildTitleOfTask(context, taskManager),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.010),
+              Text("${(taskManager.getEditingRatio * 100).toInt()}% of tasks"),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.010),
+              Row(
+                children: [
+                  Expanded(
+                    child: LinearProgressIndicator(
+                      color: taskManager.getEditingColor,
+                      value: taskManager.getEditingRatio,
+                      backgroundColor:
+                          taskManager.getEditingColor.withOpacity(0.2),
+                    ),
+                  ),
+                  const SizedBox(width: 5),
+                  Text('${(taskManager.getEditingRatio * 100).toInt()}%'),
+                ],
               ),
-              const SizedBox(width: 5),
-              Text('${(_ratio * 100).toInt()}%'),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
-  Widget buildTitleOfTask(BuildContext context) {
+  Widget buildTitleOfTask(BuildContext context, TaskManager taskManager) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       dense: true,
-      leading: Text(_name,
+      leading: Text(taskTable.name,
           style: Theme.of(context)
               .textTheme
               .headline3!
@@ -282,56 +237,66 @@ class _EdittingTasksState extends State<EdittingTasks> {
         onPressed: () {
           // ignore: todo
           //TODO: Delete TaskTable
-          DatabaseHelper.instance.deleteItem(widget.task!);
+          taskManager.deleteItem(taskTable);
           Navigator.pop(context, true);
         },
       ),
     );
   }
 
-  Widget buildTopBar(context) {
-    return Container(
-      padding: EdgeInsets.symmetric(
-          horizontal: MediaQuery.of(context).size.width * 0.0),
-      child: ListTile(
-        leading: IconButton(
-          padding: EdgeInsets.zero,
-          icon: Icon(
-            Icons.circle,
-            size: 40,
-            color: _color,
+  Widget buildTopBar(BuildContext context) {
+    return Consumer<TaskManager>(builder: (context, taskManager, child) {
+      return Container(
+        padding: EdgeInsets.symmetric(
+            horizontal: MediaQuery.of(context).size.width * 0.0),
+        child: ListTile(
+          leading: IconButton(
+            padding: EdgeInsets.zero,
+            icon: Icon(
+              Icons.circle,
+              size: 40,
+              color: taskManager.getEditingColor,
+            ),
+            onPressed: () => pickColor(context, taskManager),
           ),
-          onPressed: () => pickColor(context),
+          trailing: IconButton(
+            onPressed: () {
+              _controller.dispose();
+              Navigator.pop(context, true);
+            },
+            icon: const Icon(Icons.clear, size: 30),
+          ),
         ),
-        trailing: IconButton(
-          onPressed: () => Navigator.pop(context, true),
-          icon: const Icon(Icons.clear, size: 30),
-        ),
-      ),
-    );
+      );
+    });
   }
 
-  void pickColor(BuildContext context) => showDialog(
+  void pickColor(BuildContext context, TaskManager taskManager) => showDialog(
         context: context,
         builder: (context) => AlertDialog(
           title: Text(
             'Pick Your Color',
-            style: Theme.of(context).textTheme.headline3!.copyWith(
-                  fontWeight: FontWeight.bold,
-                ),
+            style: Theme.of(context)
+                .textTheme
+                .headline3!
+                .copyWith(fontWeight: FontWeight.bold),
           ),
           content: SingleChildScrollView(
             child: Column(
               children: [
-                buildColorPicker(),
+                buildColorPicker(taskManager),
                 TextButton(
-                  child: Text('Select this',
-                      style: Theme.of(context).textTheme.headline3!.copyWith(
-                            fontWeight: FontWeight.bold,
-                          )),
+                  child: Text(
+                    'Select this',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headline3!
+                        .copyWith(fontWeight: FontWeight.bold),
+                  ),
                   onPressed: () {
-                    DatabaseHelper.instance
-                        .setColor(taskTables: widget.task!, color: _color);
+                    taskManager.setTaskColor(
+                        taskTables: taskTable,
+                        color: taskManager.getEditingColor);
                     Navigator.pop(context, true);
                   },
                 ),
@@ -340,9 +305,10 @@ class _EdittingTasksState extends State<EdittingTasks> {
           ),
         ),
       );
-  Widget buildColorPicker() => BlockPicker(
-        pickerColor: Color(int.parse(widget.task!.color)),
-        onColorChanged: (color) => setState(() => _color = color),
+
+  Widget buildColorPicker(TaskManager taskManager) => BlockPicker(
+        pickerColor: taskManager.getEditingColor,
+        onColorChanged: (color) => taskManager.setColor(color, false),
       );
 }
-//widget.task == null ? _color :
+//task == null ? _color :z

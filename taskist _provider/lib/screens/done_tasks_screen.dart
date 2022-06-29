@@ -1,24 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:provider/provider.dart';
 import 'package:todoist/components/components.dart';
-import 'package:todoist/database_helper.dart';
+import 'package:todoist/providers/providers.dart';
 import '../models/tasks.dart';
 import 'screens.dart';
 
-class DoneTasks extends StatefulWidget {
+class DoneTasks extends StatelessWidget {
   const DoneTasks({Key? key}) : super(key: key);
-
-  @override
-  State<DoneTasks> createState() => _DoneTasksState();
-}
-
-class _DoneTasksState extends State<DoneTasks> {
-  late DateTime time;
-  @override
-  void initState() {
-    time = DateTime.now();
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +17,7 @@ class _DoneTasksState extends State<DoneTasks> {
           children: [
             buildDateTime(),
             const SizedBox(height: 20),
-            buildVerticalLine(),
+            buildVerticalLine(context),
             const SizedBox(height: 30),
             Expanded(child: buildTasksList(context)),
             SizedBox(
@@ -41,22 +30,24 @@ class _DoneTasksState extends State<DoneTasks> {
   }
 
   Widget buildDateTime() {
-    String dateOfWeek = DateFormat('EEEE').format(time);
-    String date = DateFormat('d MMM').format(time);
-    return Container(
-      padding: const EdgeInsets.only(left: 35, right: 35, top: 20),
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(dateOfWeek, style: Theme.of(context).textTheme.headline2),
-          Text(date, style: Theme.of(context).textTheme.headline2),
-        ],
-      ),
-    );
+    return Consumer<TaskManager>(builder: (context, taskManager, child) {
+      String dateOfWeek = DateFormat('EEEE').format(taskManager.getDateTime);
+      String date = DateFormat('d MMM').format(taskManager.getDateTime);
+      return Container(
+        padding: const EdgeInsets.only(left: 35, right: 35, top: 20),
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(dateOfWeek, style: Theme.of(context).textTheme.headline2),
+            Text(date, style: Theme.of(context).textTheme.headline2),
+          ],
+        ),
+      );
+    });
   }
 
-  Widget buildVerticalLine() {
+  Widget buildVerticalLine(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -77,12 +68,11 @@ class _DoneTasksState extends State<DoneTasks> {
                         fontWeight: FontWeight.bold,
                       )),
               TextSpan(
-                text: "Done",
-                style: Theme.of(context).textTheme.headline3!.copyWith(
-                    fontSize: 30,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w300),
-              ),
+                  text: "Done",
+                  style: Theme.of(context).textTheme.headline3!.copyWith(
+                      fontSize: 30,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w300)),
             ],
           ),
         ),
@@ -98,42 +88,54 @@ class _DoneTasksState extends State<DoneTasks> {
   }
 
   Widget buildTasksList(context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 35),
-      child: FutureBuilder(
-        future: DatabaseHelper.instance.getAllDone(),
-        builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-              return ListView.separated(
-                physics: const BouncingScrollPhysics(),
-                scrollDirection: Axis.horizontal,
-                itemBuilder: (context, index) => GestureDetector(
-                  child: TaskCard(taskTables: snapshot.data![index]),
-                  onTap: () => Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) =>
-                            EdittingTasks(task: snapshot.data![index])),
-                  ).then((value) => setState(() {})),
-                ),
-                separatorBuilder: (context, index) => const SizedBox(width: 10),
-                itemCount: snapshot.data!.length,
+    return Consumer<TaskManager>(builder: (context, taskManager, child) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 35),
+        child: FutureBuilder(
+          future: taskManager.getAllDone(),
+          builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
+            if (snapshot.hasData) {
+              if (snapshot.data!.isEmpty) {
+                return Center(
+                  child: Text('No tasks remain!',
+                      style: Theme.of(context).textTheme.headline3),
+                );
+              } else {
+                return buildSmallTasks(context, snapshot, taskManager);
+              }
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text(snapshot.error.toString(),
+                    style: Theme.of(context).textTheme.headline3),
               );
-            } else if (snapshot.data!.isEmpty) {
-              return Center(
-                  child: Text('No tasks done!',
-                      style: Theme.of(context).textTheme.headline3));
             } else {
-              return Center(
-                  child: Text(snapshot.error.toString(),
-                      style: Theme.of(context).textTheme.headline2));
+              return const Center(child: CircularProgressIndicator());
             }
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
+          },
+        ),
+      );
+    });
+  }
+
+  Widget buildSmallTasks(BuildContext context,
+      AsyncSnapshot<List<TaskTables>> snapshot, TaskManager taskManager) {
+    return ListView.separated(
+      physics: const BouncingScrollPhysics(),
+      scrollDirection: Axis.horizontal,
+      itemBuilder: (context, index) => GestureDetector(
+        child: TaskCard(taskTables: snapshot.data![index]),
+        onTap: () => Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChangeNotifierProvider.value(
+              value: Provider.of<TaskManager>(context, listen: false),
+              child: EdittingTasks(taskTable: snapshot.data![index]),
+            ),
+          ),
+        ),
       ),
+      separatorBuilder: (context, index) => const SizedBox(width: 10),
+      itemCount: snapshot.data!.length,
     );
   }
 }

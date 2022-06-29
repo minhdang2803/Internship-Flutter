@@ -32,34 +32,36 @@ class _HomepageState extends State<Homepage> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<TaskManager>(builder: ((context, taskManager, child) {
-      taskManager.initDatabase();
-      return Scaffold(
-        body: SafeArea(
-          child: Center(
-            child: pages[taskManager.getCurrentTab],
+    return Consumer<TaskManager>(
+      builder: ((context, taskManager, child) {
+        taskManager.initDatabase();
+        return Scaffold(
+          body: SafeArea(
+            child: Center(
+              child: pages[taskManager.getCurrentTab],
+            ),
           ),
-        ),
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.check_box),
-              label: 'Done',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.calendar_today),
-              label: 'Tasks',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.settings),
-              label: 'Settings',
-            ),
-          ],
-          currentIndex: taskManager.getCurrentTab,
-          selectedItemColor: Colors.blue.shade300,
-          onTap: taskManager.gotoTab,
-        ),
-      );
-    }));
+          bottomNavigationBar: BottomNavigationBar(
+            items: const <BottomNavigationBarItem>[
+              BottomNavigationBarItem(
+                icon: Icon(Icons.check_box),
+                label: 'Done',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.calendar_today),
+                label: 'Tasks',
+              ),
+              BottomNavigationBarItem(
+                icon: Icon(Icons.settings),
+                label: 'Settings',
+              ),
+            ],
+            currentIndex: taskManager.getCurrentTab,
+            selectedItemColor: Colors.blue.shade300,
+            onTap: taskManager.gotoTab,
+          ),
+        );
+      }),
+    );
   }
 }

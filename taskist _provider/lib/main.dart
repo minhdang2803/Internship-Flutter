@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:todoist/database_helper.dart';
+import 'package:todoist/utils/database_helper.dart';
 import 'package:todoist/providers/providers.dart';
 import 'screens/screens.dart';
 import 'package:flutter_native_splash/flutter_native_splash.dart';

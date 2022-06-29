@@ -2,26 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:todoist/components/components.dart';
-import 'package:todoist/database_helper.dart';
 import 'package:todoist/models/models.dart';
 import 'package:todoist/providers/providers.dart';
 import 'screens.dart';
 
-class AddedTasks extends StatefulWidget {
+class AddedTasks extends StatelessWidget {
   const AddedTasks({Key? key}) : super(key: key);
-
-  @override
-  State<AddedTasks> createState() => _AddedTasksState();
-}
-
-class _AddedTasksState extends State<AddedTasks> {
-  late DateTime time;
-  @override
-  void initState() {
-    time = DateTime.now();
-    super.initState();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,7 +16,7 @@ class _AddedTasksState extends State<AddedTasks> {
           children: [
             buildDateTime(),
             const SizedBox(height: 20),
-            buildVerticalLine(),
+            buildVerticalLine(context),
             const SizedBox(height: 30),
             buildAddTaskButton(context),
             const SizedBox(height: 40),
@@ -45,22 +31,24 @@ class _AddedTasksState extends State<AddedTasks> {
   }
 
   Widget buildDateTime() {
-    String dateOfWeek = DateFormat('EEEE').format(time);
-    String date = DateFormat('d MMM').format(time);
-    return Container(
-      padding: const EdgeInsets.only(left: 35, right: 35, top: 20),
-      width: double.infinity,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(dateOfWeek, style: Theme.of(context).textTheme.headline2),
-          Text(date, style: Theme.of(context).textTheme.headline2),
-        ],
-      ),
-    );
+    return Consumer<TaskManager>(builder: (context, taskManager, child) {
+      String dateOfWeek = DateFormat('EEEE').format(taskManager.getDateTime);
+      String date = DateFormat('d MMM').format(taskManager.getDateTime);
+      return Container(
+        padding: const EdgeInsets.only(left: 35, right: 35, top: 20),
+        width: double.infinity,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(dateOfWeek, style: Theme.of(context).textTheme.headline2),
+            Text(date, style: Theme.of(context).textTheme.headline2),
+          ],
+        ),
+      );
+    });
   }
 
-  Widget buildVerticalLine() {
+  Widget buildVerticalLine(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceAround,
       children: [
@@ -111,8 +99,13 @@ class _AddedTasksState extends State<AddedTasks> {
           child: IconButton(
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (context) => AddingTasks()),
-            ).then((value) => setState(() {})),
+              MaterialPageRoute(
+                builder: (context) => ChangeNotifierProvider.value(
+                  value: Provider.of<TaskManager>(context, listen: false),
+                  child: AddingTasks(),
+                ),
+              ),
+            ),
             icon: const Icon(Icons.add, size: 30),
           ),
         ),
@@ -128,68 +121,61 @@ class _AddedTasksState extends State<AddedTasks> {
   }
 
   Widget buildTasksList(context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 35),
-      child: FutureBuilder(
-        future:
-            Provider.of<TaskManager>(context, listen: false).getTaskTables(),
-        builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
-          if (snapshot.connectionState == ConnectionState.done) {
+    return Consumer<TaskManager>(builder: (context, taskManager, child) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 35),
+        child: FutureBuilder(
+          future: taskManager.getTaskTables(),
+          builder: (context, AsyncSnapshot<List<TaskTables>> snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data!.isEmpty) {
                 return Center(
-                  child: Text(
-                    'No tasks remain!',
-                    style: Theme.of(context).textTheme.headline3,
-                  ),
+                  child: Text('No tasks remain!',
+                      style: Theme.of(context).textTheme.headline3),
                 );
               } else {
-                return buildListOfTasksTable(context, snapshot);
+                return buildListOfTasksTable(context, snapshot, taskManager);
               }
-            } else {
+            } else if (snapshot.hasError) {
               return Center(
-                child: Text(
-                  snapshot.error.toString(),
-                  style: Theme.of(context).textTheme.headline3,
-                ),
+                child: Text(snapshot.error.toString(),
+                    style: Theme.of(context).textTheme.headline3),
               );
+            } else {
+              return const Center(child: CircularProgressIndicator());
             }
-          } else {
-            return const Center(child: CircularProgressIndicator());
-          }
-        },
-      ),
-    );
+          },
+        ),
+      );
+    });
   }
 
-  Widget buildListOfTasksTable(
-      context, AsyncSnapshot<List<TaskTables>> snapshot) {
+  Widget buildListOfTasksTable(context,
+      AsyncSnapshot<List<TaskTables>> snapshot, TaskManager taskManager) {
     return ListView.separated(
       physics: const BouncingScrollPhysics(),
       scrollDirection: Axis.horizontal,
       itemBuilder: (context, index) {
         TaskTables tasktable = snapshot.data![index];
         return GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            //! Passing Provider to the Adding Screen
-            MaterialPageRoute(
-              builder: (context) => ChangeNotifierProvider(
-                create: (create) => TaskManager(),
-                child: EdittingTasks(
-                  task: tasktable,
+          onTap: () async {
+            taskManager.setEachTaskTable(tasktable);
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChangeNotifierProvider.value(
+                  value: Provider.of<TaskManager>(context, listen: false),
+                  child: EdittingTasks(taskTable: tasktable),
                 ),
               ),
-            ),
-          ),
+            );
+          },
           onLongPress: () {
-            DatabaseHelper.instance.deleteItem(tasktable);
-            setState(() {});
+            taskManager.deleteItem(tasktable);
           },
           onDoubleTap: () {
-            DatabaseHelper.instance.deleteAllTask();
-            DatabaseHelper.instance.deleteAllTable();
-            setState(() {});
+            taskManager.deleteAllTask();
+            taskManager.deleteAllTable();
           },
           child: TaskCard(taskTables: tasktable),
         );

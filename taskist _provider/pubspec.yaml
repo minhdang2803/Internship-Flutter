@@ -46,6 +46,7 @@ dependencies:
   flutter_provider: ^2.1.0
   shared_preferences: ^2.0.15
   rename: ^2.0.1
+  uuid: ^3.0.6
   
 flutter_icons:
   android: true
