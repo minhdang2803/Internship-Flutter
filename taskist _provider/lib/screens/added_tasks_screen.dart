@@ -99,12 +99,7 @@ class AddedTasks extends StatelessWidget {
           child: IconButton(
             onPressed: () => Navigator.push(
               context,
-              MaterialPageRoute(
-                builder: (context) => ChangeNotifierProvider.value(
-                  value: Provider.of<TaskManager>(context, listen: false),
-                  child: AddingTasks(),
-                ),
-              ),
+              MaterialPageRoute(builder: (context) => AddingTasks()),
             ),
             icon: const Icon(Icons.add, size: 30),
           ),
@@ -163,10 +158,7 @@ class AddedTasks extends StatelessWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ChangeNotifierProvider.value(
-                  value: Provider.of<TaskManager>(context, listen: false),
-                  child: EdittingTasks(taskTable: tasktable),
-                ),
+                builder: (context) => EdittingTasks(taskTable: tasktable),
               ),
             );
           },

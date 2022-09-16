@@ -13,9 +13,13 @@ Future<void> main() async {
   FlutterNativeSplash.preserve(widgetsBinding: widgetsBinding);
   final taskistThemeProvider =
       TaskistThemeProvider(isDarkMode: prefs.getBool('isDarkTheme') ?? false);
+  final taskManager = TaskManager();
   runApp(
-    ChangeNotifierProvider(
-      create: (context) => taskistThemeProvider,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => taskistThemeProvider),
+        ChangeNotifierProvider(create: (context) => taskManager)
+      ],
       child: const TaskistClone(),
     ),
   );
@@ -29,7 +33,6 @@ class TaskistClone extends StatefulWidget {
 }
 
 class _TaskistCloneState extends State<TaskistClone> {
-  final taskManager = TaskManager();
   @override
   void dispose() {
     super.dispose();
@@ -38,18 +41,15 @@ class _TaskistCloneState extends State<TaskistClone> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [ChangeNotifierProvider(create: (context) => taskManager)],
-      child: Consumer<TaskistThemeProvider>(
-        builder: (context, value, child) {
-          return MaterialApp(
-            debugShowCheckedModeBanner: false,
-            theme: value.getTheme,
-            title: "Taskist Clone",
-            home: const Homepage(),
-          );
-        },
-      ),
+    return Consumer<TaskistThemeProvider>(
+      builder: (context, value, child) {
+        return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: value.getTheme,
+          title: "Taskist Clone",
+          home: const Homepage(),
+        );
+      },
     );
   }
 }

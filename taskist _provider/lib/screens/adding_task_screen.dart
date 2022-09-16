@@ -10,29 +10,26 @@ class AddingTasks extends StatelessWidget {
   AddingTasks({Key? key}) : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider<TaskManager>.value(
-      value: Provider.of<TaskManager>(context, listen: false),
-      child: Scaffold(
-        appBar: buildAppBar(context),
-        body: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                buildTextTitle(context),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.025),
-                buildTextField(context),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.025),
-                buildChooseColor(context),
-                SizedBox(height: MediaQuery.of(context).size.height * 0.025),
-              ],
-            ),
+    return Scaffold(
+      appBar: buildAppBar(context),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              buildTextTitle(context),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.025),
+              buildTextField(context),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.025),
+              buildChooseColor(context),
+              SizedBox(height: MediaQuery.of(context).size.height * 0.025),
+            ],
           ),
         ),
-        floatingActionButton: buildFloatingActionButton(context),
-        floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
       ),
+      floatingActionButton: buildFloatingActionButton(context),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
     );
   }
 
